@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "782612439848",
+    "firebase_url": "https://hotspots-f00d7.firebaseio.com",
+    "project_id": "hotspots-f00d7",
+    "storage_bucket": "hotspots-f00d7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:782612439848:android:05ee8d11f0d860a908261d",
+        "android_client_info": {
+          "package_name": "com.seniordesign.hotspots"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "782612439848-5j96fl0u0b0s6sf3assev0s1t26o4mgr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkq_G7oY4NbQJvW8At7eHtAe1d3peOweg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "782612439848-5j96fl0u0b0s6sf3assev0s1t26o4mgr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
