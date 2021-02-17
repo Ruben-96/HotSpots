@@ -21,26 +21,17 @@ class _RegisterState extends State<Register> {
   @SemanticsHintOverrides()
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.blue[100],
-        appBar: AppBar(
-            backgroundColor: Colors.blue[300],
-            elevation: 0.0,
-            title: Text('Register'),
-            actions: <Widget>[
-              FlatButton.icon(
-                  icon: Icon(Icons.person),
-                  label: Text('Sign In'),
-                  onPressed: () {
-                    widget.toggleView();
-                  })
-            ]),
-        body: Container(
-          padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: <Widget>[
-                SizedBox(height: 20.0),
+      body: Container(
+        color: Colors.white,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(50.0,0.0,50.0,0.0),
+          child: ListView(
+            children: <Widget>[Form(
+              child: Column(
+                children: <Widget>[
+                SizedBox(height: 50.0),
+                Text("Sign Up", textScaleFactor: 2.0,),
+                SizedBox(height: 50.0),
                 TextFormField(validator: (val) {
                   if (val.isEmpty) {
                     return 'Enter an email';
@@ -48,7 +39,7 @@ class _RegisterState extends State<Register> {
                   return null;
                 }, onChanged: (val) {
                   setState(() => email = val);
-                }),
+                }, decoration: InputDecoration(hintText: "Email"),),
                 SizedBox(height: 20.0),
                 TextFormField(
                     obscureText: true,
@@ -57,7 +48,7 @@ class _RegisterState extends State<Register> {
                         : null,
                     onChanged: (val) {
                       setState(() => password = val);
-                    }),
+                    }, decoration: InputDecoration(hintText: "Password")),
                 SizedBox(height: 20.0),
                 RaisedButton(
                     color: Colors.green[300],
@@ -80,8 +71,64 @@ class _RegisterState extends State<Register> {
                   style: TextStyle(color: Colors.red, fontSize: 14.0),
                 )
               ],
+              )
             ),
-          ),
-        ));
+            SizedBox(height: 20.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children:<Widget>[
+            Text("Already have an account?"),
+            RaisedButton(
+              elevation: 0.0,
+              color: Colors.white,
+              onPressed: widget.toggleView,
+              child: Text("Login", style: TextStyle(color: Colors.blue)))
+          ])]
+          )
+        )
+      )
+    );
   }
 }
+
+// children: <Widget>[
+//                 SizedBox(height: 20.0),
+//                 TextFormField(validator: (val) {
+//                   if (val.isEmpty) {
+//                     return 'Enter an email';
+//                   }
+//                   return null;
+//                 }, onChanged: (val) {
+//                   setState(() => email = val);
+//                 }),
+//                 SizedBox(height: 20.0),
+//                 TextFormField(
+//                     obscureText: true,
+//                     validator: (val) => val.length < 6
+//                         ? 'Password must be at least 6 characters.'
+//                         : null,
+//                     onChanged: (val) {
+//                       setState(() => password = val);
+//                     }),
+//                 SizedBox(height: 20.0),
+//                 RaisedButton(
+//                     color: Colors.green[300],
+//                     child: Text(
+//                       'Register',
+//                       style: TextStyle(color: Colors.white),
+//                     ),
+//                     onPressed: () async {
+//                       if (_formKey.currentState.validate()) {
+//                         dynamic result = await _auth.register(email, password);
+//                         if (result == null) {
+//                           setState(
+//                               () => error = 'Please provide a valid email.');
+//                         }
+//                       }
+//                     }),
+//                 SizedBox(height: 12.0),
+//                 Text(
+//                   error,
+//                   style: TextStyle(color: Colors.red, fontSize: 14.0),
+//                 )
+//               ],
