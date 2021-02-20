@@ -35,7 +35,7 @@ class _UserWrapper extends State<UserWrapper>{
             onPageChanged: (index){
               if(index == 0){
               setState((){
-                navColor = Colors.transparent;
+                navColor = Colors.black;
                 navItemColor = Colors.white;
                 currentPage = index;
               });

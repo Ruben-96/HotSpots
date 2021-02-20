@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:hotspots/services/Auth.dart';
@@ -14,8 +15,11 @@ class _RegisterState extends State<Register> {
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
   //Register Values
+  String fullName = '';
+  String username = '';
   String email = '';
   String password = '';
+  String confirmPassword = '';
   String error = '';
 
   @SemanticsHintOverrides()
@@ -32,6 +36,15 @@ class _RegisterState extends State<Register> {
                 SizedBox(height: 50.0),
                 Text("Sign Up", textScaleFactor: 2.0,),
                 SizedBox(height: 50.0),
+                TextFormField(
+                  validator: (val) {
+                    return val.isEmpty ? "Enter your full name" : null;
+                  }, 
+                  onChanged: (val) {
+                    setState(() => fullName = val);
+                  }, 
+                  decoration: InputDecoration(hintText: "Full Name"),),
+                SizedBox(height: 20.0),
                 TextFormField(validator: (val) {
                   if (val.isEmpty) {
                     return 'Enter an email';
@@ -49,6 +62,15 @@ class _RegisterState extends State<Register> {
                     onChanged: (val) {
                       setState(() => password = val);
                     }, decoration: InputDecoration(hintText: "Password")),
+                SizedBox(height: 20.0),
+                TextFormField(
+                    obscureText: true,
+                    validator: (val) => val.length < 6
+                        ? 'Password must be at least 6 characters.'
+                        : null,
+                    onChanged: (val) {
+                      setState(() => confirmPassword = val);
+                    }, decoration: InputDecoration(hintText: "Confirm Password")),
                 SizedBox(height: 20.0),
                 RaisedButton(
                     color: Colors.green[300],

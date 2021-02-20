@@ -10,7 +10,9 @@ class _DiscoverPage extends State<DiscoverPage>{
   @override
   Widget build(BuildContext context){
     return Material(
-
+      child: Center(
+        child: Text("Discover")
+      )
     );
   }
 }
