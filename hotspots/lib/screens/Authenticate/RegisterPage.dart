@@ -30,21 +30,20 @@ class _RegisterState extends State<Register> {
         child: Padding(
           padding: EdgeInsets.fromLTRB(50.0,0.0,50.0,0.0),
           child: ListView(
-            children: <Widget>[Form(
+            children: <Widget>[
+              Form(
+                key: _formKey,
               child: Column(
                 children: <Widget>[
                 SizedBox(height: 50.0),
                 Text("Sign Up", textScaleFactor: 2.0,),
                 SizedBox(height: 50.0),
-                TextFormField(
-                  validator: (val) {
-                    return val.isEmpty ? "Enter your full name" : null;
-                  }, 
-                  onChanged: (val) {
-                    setState(() => fullName = val);
-                  }, 
-                  decoration: InputDecoration(hintText: "Full Name"),),
-                SizedBox(height: 20.0),
+                // TextFormField( 
+                //   onChanged: (val) {
+                //     setState(() => fullName = val);
+                //   }, 
+                //   decoration: InputDecoration(hintText: "Full Name"),),
+                // SizedBox(height: 20.0),
                 TextFormField(validator: (val) {
                   if (val.isEmpty) {
                     return 'Enter an email';
@@ -63,15 +62,15 @@ class _RegisterState extends State<Register> {
                       setState(() => password = val);
                     }, decoration: InputDecoration(hintText: "Password")),
                 SizedBox(height: 20.0),
-                TextFormField(
-                    obscureText: true,
-                    validator: (val) => val.length < 6
-                        ? 'Password must be at least 6 characters.'
-                        : null,
-                    onChanged: (val) {
-                      setState(() => confirmPassword = val);
-                    }, decoration: InputDecoration(hintText: "Confirm Password")),
-                SizedBox(height: 20.0),
+                // TextFormField(
+                //     obscureText: true,
+                //     validator: (val) => val.length < 6
+                //         ? 'Password must be at least 6 characters.'
+                //         : null,
+                //     onChanged: (val) {
+                //       setState(() => confirmPassword = val);
+                //     }, decoration: InputDecoration(hintText: "Confirm Password")),
+                // SizedBox(height: 20.0),
                 RaisedButton(
                     color: Colors.green[300],
                     child: Text(
