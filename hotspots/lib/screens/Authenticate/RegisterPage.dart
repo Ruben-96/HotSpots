@@ -30,6 +30,7 @@ class _RegisterState extends State<Register> {
   String usernameError = '';
   String emailError = '';
   String passwordError = '';
+  String confirmpasswordError = '';
 
   String fullnameLabel = '';
   String usernameLabel = '';
@@ -56,17 +57,18 @@ class _RegisterState extends State<Register> {
                 TextFormField(
                   onChanged: (val){
                     if (val.isNotEmpty){
-                        fullnameLabel = "Full Name";
-                        if (val.contains(new RegExp(r'^.*[0-9].*$'))){
-                          fullnameError = "Name can't contain digits.";
-                        } else if(val.contains(new RegExp(r'^.*[!@#$%^&*()_+-={}<>,.;].*$'))){
-                          fullnameError = "Name can't contain symbols.";
-                        } else{
-                          fullnameError = "";
-                        }
+                      fullnameLabel = "Full Name";
+                      if (val.contains(new RegExp(r'^.*[0-9].*$'))){
+                        fullnameError = "Name can't contain digits.";
+                      } else if(val.contains(new RegExp(r'^.*[!@#$%^&*()_+-={}<>,.;].*$'))){
+                        fullnameError = "Name can't contain symbols.";
                       } else{
-                        fullnameLabel = "";
+                        fullnameError = "";
                       }
+                    } else{
+                      fullnameError = "";
+                      fullnameLabel = "";
+                    }
                     setState((){
                       fullName = val;
                       fullnameLabel = fullnameLabel;
@@ -86,15 +88,16 @@ class _RegisterState extends State<Register> {
                 TextFormField( 
                   onChanged: (val) {
                     if (val.isNotEmpty){
-                        usernameLabel = "Username";
-                        if(val.contains(new RegExp(r'^.*[!@#$%^&*()+={}<>,;\s].*$'))){
-                          usernameError = "Name can't contain some symbols.";
-                        } else{
-                          usernameError = "";
-                        }
+                      usernameLabel = "Username";
+                      if(val.contains(new RegExp(r'^.*[!@#$%^&*()+={}<>,;\s].*$'))){
+                        usernameError = "Name can't contain some symbols.";
                       } else{
-                        usernameLabel = "";
+                        usernameError = "";
                       }
+                    } else{
+                      usernameError = "";
+                      usernameLabel = "";
+                    }
                     setState((){
                       userName = val;
                       usernameLabel = usernameLabel;
@@ -121,6 +124,7 @@ class _RegisterState extends State<Register> {
                         emailError = "";
                       }
                     } else{
+                      emailError = "";
                       emailLabel = "";
                     }
                     setState(() {
@@ -143,11 +147,17 @@ class _RegisterState extends State<Register> {
                     onChanged: (val) {
                       if(val.isNotEmpty){
                         passwordLabel = "Password";
-                        passwordError = "";
-                        if(val.length < 8) passwordError = "Must be at least 8 characters";
-                        if(!val.contains(new RegExp(r'^.*[0-9].*$'))) passwordError = "Password must contain a digit.";
-                        if(!val.contains(new RegExp(r'^.*[~`!@#$%^&*()_+-={}:;<>,./?].*$'))) passwordError = "Password must contain a symbol.";
+                        if(val.length < 8) { 
+                          passwordError = "Must be at least 8 characters"; 
+                        } else if(!val.contains(new RegExp(r'^.*[0-9].*$'))) { 
+                          passwordError = "Password must contain a digit."; 
+                        } else if(!val.contains(new RegExp(r'^.*[~`!@#$%^&*()_+-={}:;<>,./?].*$'))) { 
+                          passwordError = "Password must contain a symbol."; 
+                        } else { 
+                          passwordError = ""; 
+                        }
                       } else{
+                        passwordError = "";
                         passwordLabel = "";
                       }
                       setState((){
@@ -167,17 +177,33 @@ class _RegisterState extends State<Register> {
                 ),
                 TextFormField(
                     obscureText: true,
-                    validator: (val) => val == password
-                        ? 'Passwords must match.'
-                        : null,
                     onChanged: (val) {
+                      if(val.isNotEmpty){
+                        confirmpasswordLabel = "Confirm Password";
+                        if (val != password){
+                          confirmpasswordError = "Passwords must match";
+                        } else{
+                          confirmpasswordError = "";
+                        }
+                      } else{
+                        confirmpasswordLabel = "";
+                        confirmpasswordError = "";
+                      }
                       setState((){
                         confirmPassword = val;
-                        if (confirmPassword != password){
-                          error = "Passwords must match";
-                        }
+                        confirmpasswordLabel = confirmpasswordLabel;
+                        confirmpasswordError = confirmpasswordError;
                       });
                     }, decoration: InputDecoration(hintText: "Confirm Password")),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 0, vertical: 5),
+                  child: Row(
+                    children: [
+                      Text(confirmpasswordLabel, textAlign: TextAlign.left,), 
+                      Padding(padding: EdgeInsets.fromLTRB(10,0,0,0), child: Text(confirmpasswordError, style: TextStyle(color: Colors.red, fontSize: 14.0,), overflow: TextOverflow.ellipsis))
+                    ],
+                  )
+                ),
                 SizedBox(height: 20.0),
                 RaisedButton(
                     color: Colors.green[300],
@@ -189,12 +215,20 @@ class _RegisterState extends State<Register> {
                       if (_formKey.currentState.validate()) {
                         dynamic result = await _auth.register(email, password);
                         if (result == null) {
-                          setState(
-                              () => error = 'Please provide a valid email.');
+                          error = "";
+                        } else if (result == "weak-password"){
+                          error = "Password provided is too weak";
+                        } else if (result == "email-already-in-use"){
+                          error = "Email is already in use.";
+                        } else if (result == "invalid-email"){
+                          error = "Invalid email.";
                         } else{
                           CustomUser _user = CustomUser(uid: result.uid, fullname: fullName, username: userName);
                           _db.createUser(_user);
                         }
+                        setState((){
+                          error = error;
+                        });
                       }
                     }),
                 SizedBox(height: 12.0),
