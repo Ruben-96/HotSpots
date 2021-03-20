@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:hotspots/models/customuser.dart';
 import 'package:hotspots/screens/Authenticate/AuthenticatePage.dart';
 import 'package:flutter/material.dart';
 import 'package:hotspots/services/Auth.dart';
+import 'package:hotspots/services/DatabaseContext.dart';
 import 'package:provider/provider.dart';
 
 import 'DiscoverPage.dart';
@@ -11,7 +13,10 @@ import 'ProfilePage.dart';
 import 'UploadPage.dart';
 
 class UserWrapper extends StatefulWidget {
-  final AuthService _auth = AuthService();
+
+  final User user;
+
+  UserWrapper(this.user);
 
   @override
   _UserWrapper createState() => _UserWrapper();
@@ -48,11 +53,11 @@ class _UserWrapper extends State<UserWrapper>{
               }
             },
             children: [
-              HomePage(),
-              DiscoverPage(),
-              UploadPage(),
-              MessagesPage(),
-              ProfilePage(),
+              HomePage(widget.user),
+              DiscoverPage(widget.user),
+              UploadPage(widget.user),
+              MessagesPage(widget.user),
+              ProfilePage(widget.user),
             ],
           ),
           bottomNavigationBar: BottomNavigationBar(

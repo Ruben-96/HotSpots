@@ -1,76 +1,168 @@
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-import 'package:path/path.dart' as Path;
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+
+/*
+##########################
+###  Upload Page Code  ###
+##########################
+*/
 class UploadPage extends StatefulWidget{
+
+  final User user;
+
+  UploadPage(this.user);
+
   @override
   _UploadPage createState() => _UploadPage();
 }
 
 class _UploadPage extends State<UploadPage>{
-  File _image;
+
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return Material(
-        color: Colors.white,
-        child:Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: .0),
-            child: Column(
-              children: [
-                SizedBox(height: 30.0),
-                Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 0.0),
-                    child: Row(
-                      children: [
-                        Expanded(child: Text("Post Creation", style: TextStyle(fontSize: 24.0)))
-                      ],
-                    )
-                ),
-                SizedBox(height: 10.0),
-                Divider(color: Colors.black54, thickness: 1.0),
-                TextField(
-                  style: TextStyle(fontSize: 24.0),
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: 'Post Title'
-                  ),
-                ),
-                _image != null ? Image.asset(
-                  _image.path,
-                  height: 300,
-                ): Placeholder(fallbackHeight : 300),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 0.0, vertical: 15.0)
-                ),
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      RaisedButton(
-                        child: Text('Select a File'),
-                        onPressed: chooseFile,
-                        color: Colors.black54,
-                      ),
-                      Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 0.0)
-                      ),
-                      RaisedButton(
-                        child: Text('Create Post'),
-                        onPressed: chooseFile,
-                        color: Colors.red
-                      )]
-                )
-              ],
-            )
-        )
+      child: Center(
+        child: Text("Upload Page")
+      )
     );
   }
-  Future chooseFile() async {
-    await ImagePicker.pickImage(source: ImageSource.gallery).then((image) {
-      setState(() {
-        _image = image;
-      });
-    });
-  }
+
 }
 
+/*
+################################################
+###  Camera preview working with code below  ###
+################################################
+// 
+*/
+// class _UploadPage extends State<UploadPage>{
+
+//   CameraController _controller;
+
+//   String route = "/camera";
+
+//   @override
+//   Widget build(BuildContext context){
+//     return Stack(
+//       children: [
+//         MaterialApp(
+//           initialRoute: route,
+//           routes: {
+//             '/camera': (BuildContext ctx) => _Camera(_controller),
+//             '/gallery': (BuildContext ctx) => _Gallery(_controller)
+//           }
+//         ),
+//         Padding(
+//           padding: EdgeInsets.symmetric(horizontal: 30, vertical: 0),
+//           child: Row(
+//             children: [
+//               ElevatedButton(child: Text("Capture", style:TextStyle(color: Colors.white)), onPressed: (){ setState((){ route = "/gallery"; });},)
+//             ],
+//           ),
+//         )
+//       ],
+//     );
+//   }
+// }
+
+// /*
+// ######################################
+// ###  Camera to capture images code ###
+// ######################################
+// */
+// class _Camera extends StatefulWidget{
+//   final loadingWidget;
+//   @override
+//   _Camera(this.loadingWidget);
+
+//   _CameraState createState() => _CameraState();
+// }
+
+// class _CameraState extends State<_Camera> with WidgetsBindingObserver{
+
+//   List<CameraDescription> _cameras;
+//   CameraController _controller;
+//   int _camIdx = 0;
+  
+//   @override
+//   void initState(){
+//     super.initState();
+//     setupCamera();
+//     WidgetsBinding.instance.addObserver(this);
+//   }
+
+//   @override
+//   void dispose(){
+//     WidgetsBinding.instance.addObserver(this);
+//     _controller?.dispose();
+//     super.dispose();
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     if (_controller == null) {
+//       if (widget.loadingWidget != null) {
+//         return widget.loadingWidget;
+//       } else {
+//         return Container(
+//           color: Colors.black,
+//         );
+//       }
+//     } else {
+//       return CameraPreview(_controller);
+//     }
+//   }
+
+//   @override
+//   void didChangeAppLifecycleState(AppLifecycleState state) async {
+//     if (_controller == null || !_controller.value.isInitialized) {
+//       return;
+//     }
+
+//     if (state == AppLifecycleState.inactive) {
+//       _controller?.dispose();
+//     } else if (state == AppLifecycleState.resumed) {
+//       setupCamera();
+//     }
+//   }
+
+//   Future<void> setupCamera() async{
+//     _cameras = await availableCameras();
+//     var controller = await selectCamera();
+//     setState(() => _controller = controller);
+//   }
+
+//   selectCamera() async{
+//     var controller = CameraController(_cameras[_camIdx], ResolutionPreset.low);
+//     await controller.initialize();
+//     return controller;
+//   }
+
+//   toggleCamera() async {
+//     int newSelected = (_camIdx + 1) % _cameras.length;
+//     _camIdx = newSelected;
+    
+//     var controller = await selectCamera();
+//     setState(() => _controller = controller);
+//   }
+// }
+
+// /*
+// #############################
+// ###  Gallery Widget code  ###
+// #############################
+// */
+// class _Gallery extends StatefulWidget{
+//   final loadingWidget;
+//   _Gallery(this.loadingWidget);
+//   @override
+//   _GalleryState createState() => _GalleryState();
+// }
+
+// class _GalleryState extends State<_Gallery>{
+//   @override
+//   Widget build(BuildContext context){
+//     return MaterialApp();
+//   }
+// }

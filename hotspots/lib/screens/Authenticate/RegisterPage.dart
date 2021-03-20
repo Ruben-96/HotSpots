@@ -8,6 +8,7 @@ import 'package:email_validator/email_validator.dart';
 
 class Register extends StatefulWidget {
   final Function toggleView;
+
   Register({this.toggleView});
 
   @override
@@ -16,7 +17,6 @@ class Register extends StatefulWidget {
 
 class _RegisterState extends State<Register> {
   final AuthService _auth = AuthService();
-  final DbService _db = DbService();
   final _formKey = GlobalKey<FormState>();
   //Register Values
   String fullName = '';
@@ -223,6 +223,7 @@ class _RegisterState extends State<Register> {
                         } else if (result == "invalid-email"){
                           error = "Invalid email.";
                         } else{
+                          DbService _db = DbService(result.user);
                           CustomUser _user = CustomUser(uid: result.uid, fullname: fullName, username: userName);
                           _db.createUser(_user);
                         }

@@ -5,6 +5,7 @@ import 'package:hotspots/screens/Wrapper.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hotspots/services/Auth.dart';
 import 'package:provider/provider.dart';
+import 'package:camera/camera.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

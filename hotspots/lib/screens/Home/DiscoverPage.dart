@@ -1,6 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class DiscoverPage extends StatefulWidget{
+
+  final User user;
+
+  DiscoverPage(this.user);
+
   @override
   _DiscoverPage createState() => _DiscoverPage();
 }

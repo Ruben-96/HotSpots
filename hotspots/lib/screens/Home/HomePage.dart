@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hotspots/services/Auth.dart';
 import 'package:video_player/video_player.dart';
@@ -9,6 +10,11 @@ import 'package:video_player/video_player.dart';
 #################################################################
 */
 class HomePage extends StatefulWidget {
+
+  final User user;
+
+  HomePage(this.user);
+
   @override
   _HomePage createState() => _HomePage();
 }

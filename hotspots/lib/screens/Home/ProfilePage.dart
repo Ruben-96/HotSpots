@@ -5,16 +5,18 @@ import 'package:provider/provider.dart';
 import 'SettingsPage.dart';
 
 class ProfilePage extends StatefulWidget{
+
+  final User user;
+
+  ProfilePage(this.user);
+
   @override
   _ProfilePage createState() => _ProfilePage();
 }
 
 class _ProfilePage extends State<ProfilePage>{
-  final AuthService _auth = AuthService();
-
   @override
   Widget build(BuildContext context){
-    final user = Provider.of<User>(context);
     return Material(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 0.0),
