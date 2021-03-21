@@ -1,13 +1,16 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hotspots/models/customuser.dart';
+import 'package:hotspots/models/messages.dart';
+import 'package:hotspots/screens/Home/MessageThreadPage.dart';
 import 'package:hotspots/services/DatabaseContext.dart';
 import 'package:uuid/uuid.dart';
 
 class WriteNewMessagePage extends StatefulWidget{
 
   final User user;
-  final Map<dynamic, dynamic> selectedList;
+  Map<dynamic, dynamic> selectedList;
 
   WriteNewMessagePage(this.user, this.selectedList);
 
@@ -17,14 +20,14 @@ class WriteNewMessagePage extends StatefulWidget{
 
 class _WriteNewMessagePage extends State<WriteNewMessagePage>{
 
-  FocusNode _focus = new FocusNode();
+  CustomUser _user;
   String message = "";
   String threadName = "";
-  String threadId = new Uuid().toString();
 
   @override
   Widget build(BuildContext context){
     DbService _db = DbService(widget.user);
+    _user = _db.getPublicUser(widget.user);
     return Material(
       child: Padding(
         padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -50,7 +53,23 @@ class _WriteNewMessagePage extends State<WriteNewMessagePage>{
                       });
                     },)
                 ),
-                IconButton(icon: Icon(Icons.send), onPressed: (){ _db.sendMessage(widget.selectedList, threadId, threadName, message); })
+                IconButton(
+                  icon: Icon(Icons.send), 
+                  onPressed: (){ 
+                    if (widget.selectedList.length == 1){
+                      threadName = widget.selectedList.values.elementAt(0).toString();
+                    } else{
+                      threadName = "Group Message";
+                    }
+                    widget.selectedList[_user.uid] = _user.username;
+                    MessageThread thread = MessageThread(threadName, widget.selectedList, new List<Message>());
+                    print(_user.username);
+                    Message _message = Message(_user.username, DateTime.now().toString(), message);
+                    _db.createMessageThread(thread, _message);
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                    //Navigator.push(context, MaterialPageRoute(builder: (context) => MessageThreadPage(widget.user, threadId, threadName, message)));
+                  }
+                )
               ],
             )
           ],

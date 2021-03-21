@@ -4,13 +4,13 @@ class CustomUser{
 
   final String uid;
 
-  final String email;
-
-  final String fullname;
-
   final String username;
 
-  List<String> postIds;
+  String fullname;
+
+  String email;
+
+  CustomUser.public(this.uid, this.username);
 
   CustomUser({this.uid, this.email, this.fullname, this.username});
 

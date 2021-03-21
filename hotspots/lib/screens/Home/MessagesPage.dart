@@ -56,17 +56,21 @@ class _MessagesPage extends State<MessagesPage>{
                     threads = snapshot.data.value;
                   }
                 }
+                if(threads != null){
                 return ListView.builder(
                   shrinkWrap: true,
                   itemCount: threads.length,
                   itemBuilder: (BuildContext context, int index){
                     String threadId = threads.keys.elementAt(index);
                     String threadName = threads[threadId]["name"];
-                    String threadLastMessage = threads[threadId]["thread"].values.last.toString();
-                    Map<dynamic, dynamic> threadMessages = threads[threadId]["thread"];
+                    String threadLastMessage = threads[threadId]["messages"].values.last["content"].toString();
+                    Map<dynamic, dynamic> threadMessages = threads[threadId]["messages"];
                     return MessageBox(widget.user, threadId, threadName, threadLastMessage, threadMessages);
                   },
                 );
+                } else{
+                  return Text("No Messages");
+                }
               }  
             )
               // child: ListView(

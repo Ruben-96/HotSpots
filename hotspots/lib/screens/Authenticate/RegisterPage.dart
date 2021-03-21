@@ -5,6 +5,7 @@ import 'package:hotspots/services/Auth.dart';
 import 'package:hotspots/services/DatabaseContext.dart';
 import 'package:hotspots/models/customuser.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:provider/provider.dart';
 
 class Register extends StatefulWidget {
   final Function toggleView;
@@ -223,8 +224,9 @@ class _RegisterState extends State<Register> {
                         } else if (result == "invalid-email"){
                           error = "Invalid email.";
                         } else{
-                          DbService _db = DbService(result.user);
-                          CustomUser _user = CustomUser(uid: result.uid, fullname: fullName, username: userName);
+                          User user = Provider.of<User>(context, listen: false);
+                          DbService _db = DbService(user);
+                          CustomUser _user = CustomUser(uid: user.uid, fullname: fullName, username: userName);
                           _db.createUser(_user);
                         }
                         setState((){

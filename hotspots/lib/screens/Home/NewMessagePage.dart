@@ -38,7 +38,8 @@ class _NewMessagePage extends State<NewMessagePage>{
                 IconButton(
                   icon: Icon(Icons.message_rounded), 
                   onPressed: (){ 
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => WriteNewMessagePage(widget.user, selectedList))); 
+                    assert(selectedList.length > 0);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => WriteNewMessagePage(widget.user, selectedList)));
                   })
               ],
             ),
@@ -78,8 +79,8 @@ class _NewMessagePage extends State<NewMessagePage>{
                   shrinkWrap: true,
                   itemCount: followedList.length,
                   itemBuilder: (BuildContext context, int index){
-                    String userId = followedList.keys.elementAt(index);
-                    String username = followedList[userId].toString();
+                    String username = followedList.keys.elementAt(index);
+                    String userId = followedList[username].toString();
                     return UserBox(
                       userId,
                       username,
