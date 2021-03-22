@@ -19,7 +19,8 @@ class _NewMessagePage extends State<NewMessagePage>{
 
   final _formKey = GlobalKey<FormState>();
   String searchString = "";
-  Map<dynamic, dynamic> followedList;
+
+  Map<dynamic, dynamic> followedList = new Map<dynamic, dynamic>();
   Map<dynamic, dynamic> selectedList = new Map<dynamic, dynamic>();
 
   @override
@@ -74,20 +75,23 @@ class _NewMessagePage extends State<NewMessagePage>{
                   return Text(snapshot.error.toString());
                 }
                 if(snapshot.hasData){
+                  if(snapshot.data.value == null){
+                    return Text("You don't follow anyone.");
+                  }
                   followedList = snapshot.data.value;
                   return ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: followedList.length,
-                  itemBuilder: (BuildContext context, int index){
-                    String username = followedList.keys.elementAt(index);
-                    String userId = followedList[username].toString();
-                    return UserBox(
-                      userId,
-                      username,
-                      toggleFromList
-                    );
-                  },
-                );
+                    shrinkWrap: true,
+                    itemCount: followedList.length,
+                    itemBuilder: (BuildContext context, int index){
+                      String username = followedList.keys.elementAt(index);
+                      String userId = followedList[username].toString();
+                      return UserBox(
+                        userId,
+                        username,
+                        toggleFromList
+                      );
+                    },
+                  );
                 }
                 return CircularProgressIndicator();
               }

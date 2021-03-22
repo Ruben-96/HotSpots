@@ -29,7 +29,6 @@ dependencies:
   provider: ^4.3.2+3
   video_player: ^0.10.5+2
   image_picker: ^0.6.7+22
-  email_validator: ^1.0.0
   camera:
   path_provider:
   path:

@@ -19,15 +19,12 @@ class WriteNewMessagePage extends StatefulWidget{
 }
 
 class _WriteNewMessagePage extends State<WriteNewMessagePage>{
-
-  CustomUser _user;
   String message = "";
   String threadName = "";
 
   @override
   Widget build(BuildContext context){
     DbService _db = DbService(widget.user);
-    _user = _db.getPublicUser(widget.user);
     return Material(
       child: Padding(
         padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -61,10 +58,9 @@ class _WriteNewMessagePage extends State<WriteNewMessagePage>{
                     } else{
                       threadName = "Group Message";
                     }
-                    widget.selectedList[_user.uid] = _user.username;
+                    widget.selectedList[widget.user.uid] = widget.user.displayName;
                     MessageThread thread = MessageThread(threadName, widget.selectedList, new List<Message>());
-                    print(_user.username);
-                    Message _message = Message(_user.username, DateTime.now().toString(), message);
+                    Message _message = Message(widget.user.displayName, DateTime.now().toString(), message);
                     _db.createMessageThread(thread, _message);
                     Navigator.of(context).popUntil((route) => route.isFirst);
                     //Navigator.push(context, MaterialPageRoute(builder: (context) => MessageThreadPage(widget.user, threadId, threadName, message)));

@@ -69,7 +69,7 @@ class _MessagesPage extends State<MessagesPage>{
                   },
                 );
                 } else{
-                  return Text("No Messages");
+                  return Expanded(child: Center(child: Text("No Messages")));
                 }
               }  
             )
@@ -105,7 +105,7 @@ class _MessageBox extends State<MessageBox>{
   Widget build(BuildContext context){
     return RaisedButton(
       color: Colors.white,
-      onPressed: (){ Navigator.push(context, MaterialPageRoute(builder: (context) => MessageThreadPage(widget.user, widget.threadId, widget.threadName, widget.threadMessages))); },
+      onPressed: (){ Navigator.push(context, MaterialPageRoute(builder: (context) => MessageThreadPage(widget.user, widget.threadId, widget.threadName))); },
       elevation: 0.0,
       child: Container(
       height: 75.0,

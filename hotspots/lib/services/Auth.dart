@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:hotspots/models/customuser.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -9,13 +10,11 @@ class AuthService {
   }
 
   //Register
-  Future register(String userEmail, String userPassword) async {
-    try {
-      UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
-              email: userEmail, password: userPassword);
-      User user = userCredential.user;
-      return user;
+  Future register(CustomUser _user) async {
+    try{
+      UserCredential userCred = await _auth.createUserWithEmailAndPassword(email: _user.email, password: _user.password);
+      _auth.currentUser.updateProfile(displayName: _user.username);
+      return userCred.user;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         return e.code;
@@ -32,6 +31,8 @@ class AuthService {
 
   //Sign in
   Future signIn(String userEmail, String userPassword) async {
+    assert(userEmail != null);
+    assert(userPassword != null);
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
           email: userEmail, password: userPassword);

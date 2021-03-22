@@ -1,17 +1,19 @@
-import 'package:firebase_auth/firebase_auth.dart';
 
 class CustomUser{
 
-  final String uid;
+  String uid;
 
-  final String username;
-
-  String fullname;
+  String username;
 
   String email;
 
+  String password;
+
   CustomUser.public(this.uid, this.username);
 
-  CustomUser({this.uid, this.email, this.fullname, this.username});
+  CustomUser({this.uid, this.email, this.username, this.password}){
+    assert(email != null);
+    assert(username != null);
+  }
 
 }

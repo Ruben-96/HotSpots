@@ -24,31 +24,11 @@ class DbService{
   }
 
   void createUser(CustomUser user){
+    assert(user.username != null);
+    assert(user.uid != null);
     _users.child(user.uid).set({
-      'fullname': user.fullname,
-      'username': user.username,
+      "username": user.username
     });
-  }
-
-  Future<String> getUsername(User user) async{
-    Future<String> fusername = _user.child("username").once().then((snapshot){ return snapshot.value.toString(); });
-    return fusername;
-  }
-
-  Future<CustomUser> getCustomUser(User user){
-    Future<DataSnapshot> snapshot = _user.once();
-    return snapshot;
-  }
-
-  CustomUser getPublicUser(User user){
-    String username = "";
-    Future<String> fusername = _user.child("username").once().then((snapshot){ return snapshot.value.toString(); });
-    fusername.then((value){ username = value; });
-    return CustomUser.public(user.uid, username);
-  }
-
-  void createPost(Post post, CustomUser user){
-
   }
 
   void createMessageThread(MessageThread thread, Message message){
@@ -82,6 +62,10 @@ class DbService{
 
   Future<DataSnapshot> getFollowedList(){
     return _user.child("following").once();
+  }
+
+  Future<DataSnapshot> getThreadMessages(String threadId){
+    return _user.child("inbox").child(threadId).child("messages").once();
   }
 
 }
