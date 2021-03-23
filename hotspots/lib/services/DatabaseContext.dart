@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:hotspots/models/customuser.dart';
 import 'package:hotspots/models/messages.dart';
-import 'package:hotspots/models/post.dart';
 
 class DbService{
 
@@ -10,8 +9,8 @@ class DbService{
 
   final FirebaseDatabase _db = FirebaseDatabase.instance;
   DatabaseReference _users;
-  DatabaseReference _posts;
-  DatabaseReference _locations;
+  //DatabaseReference _posts;
+  //DatabaseReference _locations;
   DatabaseReference _messages;
 
   DatabaseReference _user;
@@ -19,8 +18,8 @@ class DbService{
   DbService(User user){
     this.user = user;
     _users = _db.reference().child("Users");
-    _posts = _db.reference().child("Posts");
-    _locations = _db.reference().child("Locations");
+    //_posts = _db.reference().child("Posts");
+    //_locations = _db.reference().child("Locations");
     _messages = _db.reference().child("Messages");
     _user = _db.reference().child("Users").child(this.user.uid);
   }

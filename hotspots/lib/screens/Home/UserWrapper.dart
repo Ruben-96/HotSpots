@@ -1,11 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:hotspots/models/customuser.dart';
-import 'package:hotspots/screens/Authenticate/AuthenticatePage.dart';
 import 'package:flutter/material.dart';
-import 'package:hotspots/services/Auth.dart';
-import 'package:hotspots/services/DatabaseContext.dart';
-import 'package:provider/provider.dart';
-
 import 'DiscoverPage.dart';
 import 'HomePage.dart';
 import 'MessagesPage.dart';

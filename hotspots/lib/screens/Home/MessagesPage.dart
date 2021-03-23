@@ -1,15 +1,10 @@
-import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:hotspots/models/customuser.dart';
 import 'package:hotspots/models/messages.dart';
 import 'package:hotspots/screens/Home/MessagesSubpages/MessageThreadPage.dart';
 import 'package:hotspots/screens/Home/MessagesSubpages/NewMessagePage.dart';
-import 'package:hotspots/services/Auth.dart';
 import 'package:hotspots/services/DatabaseContext.dart';
-import 'package:provider/provider.dart';
 
 class MessagesPage extends StatefulWidget{
 
@@ -89,8 +84,8 @@ class _MessagesPage extends State<MessagesPage>{
 
 class MessageBox extends StatefulWidget{
 
-  User user;
-  MessageThread thread;
+  final User user;
+  final MessageThread thread;
 
   MessageBox(this.user, this.thread);
 

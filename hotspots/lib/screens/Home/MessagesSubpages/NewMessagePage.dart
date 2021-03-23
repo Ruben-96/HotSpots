@@ -1,7 +1,6 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hotspots/models/customuser.dart';
 import 'package:hotspots/models/messages.dart';
@@ -205,16 +204,15 @@ class UserBox extends StatelessWidget{
 
   final CustomUser user;
   final Function toggleFromList;
-  bool selected = false;
+  final bool selected;
 
-  UserBox(this.user, this.toggleFromList);
+  UserBox(this.user, this.toggleFromList, [this.selected = false]);
 
   UserBox.selected(this.user, this.toggleFromList, this.selected);
 
-  Color _circleColor = Colors.black12;
-
   @override
   Widget build(BuildContext context){
+    Color _circleColor = Colors.black12;
     if(selected){
       _circleColor = Colors.blue;
     }
