@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hotspots/services/Auth.dart';
 import 'package:provider/provider.dart';
-import 'SettingsPage.dart';
+import 'ProfileSubpages/SettingsPage.dart';
 
 class ProfilePage extends StatefulWidget{
 

@@ -1,6 +1,8 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hotspots/models/messages.dart';
+import 'package:hotspots/services/DatabaseContext.dart';
 
 /*
 ##########################

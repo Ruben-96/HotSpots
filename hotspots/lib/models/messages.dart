@@ -1,25 +1,31 @@
-import 'CustomUser.dart';
+import 'customuser.dart';
 
 class Message{
 
-  final String sender;
+  String sender;
 
-  final String date;
+  String time;
 
-  final String content;
+  String content;
 
-  Message(this.sender, this.date, this.content);
+  Message({this.sender, this.time, this.content});
 
 }
 
 class MessageThread{
 
-  final String name;
+  String id;
 
-  final Map<dynamic,dynamic> participants;
+  String name;
 
-  final List<Message> messages;
+  List<CustomUser> participants;
 
-  MessageThread(this.name, this.participants, this.messages);
+  List<Message> messages;
+
+  String previewMessage;
+
+  String unread;
+
+  MessageThread({this.name, this.id, this.participants, this.messages, this.previewMessage, this.unread});
 
 }

@@ -5,8 +5,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:hotspots/models/customuser.dart';
 import 'package:hotspots/models/messages.dart';
-import 'package:hotspots/screens/Home/MessageThreadPage.dart';
-import 'package:hotspots/screens/Home/NewMessagePage.dart';
+import 'package:hotspots/screens/Home/MessagesSubpages/MessageThreadPage.dart';
+import 'package:hotspots/screens/Home/MessagesSubpages/NewMessagePage.dart';
 import 'package:hotspots/services/Auth.dart';
 import 'package:hotspots/services/DatabaseContext.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +25,7 @@ class _MessagesPage extends State<MessagesPage>{
   @override
   Widget build(BuildContext context){
     final DbService _db = DbService(widget.user);
-    Map<dynamic,dynamic> threads;
+    Map<dynamic, dynamic> _threads = new Map<dynamic, dynamic>();
     return Material(
       color: Colors.white,
       child:Padding(
@@ -47,29 +47,30 @@ class _MessagesPage extends State<MessagesPage>{
             ),
             Divider(color: Colors.black54, thickness: 1.0),
             FutureBuilder(
-              future: _db.getMessages(),
+              future: _db.getThreads(),
               builder: (context, snapshot){
                 if(snapshot.hasError){
                   return Text(snapshot.error.toString());
                 } else{
                   if(snapshot.hasData){
-                    threads = snapshot.data.value;
+                    _threads = snapshot.data.value;
                   }
                 }
-                if(threads != null){
+                if(_threads != null){
                 return ListView.builder(
                   shrinkWrap: true,
-                  itemCount: threads.length,
+                  itemCount: _threads.length,
                   itemBuilder: (BuildContext context, int index){
-                    String threadId = threads.keys.elementAt(index);
-                    String threadName = threads[threadId]["name"];
-                    String threadLastMessage = threads[threadId]["messages"].values.last["content"].toString();
-                    Map<dynamic, dynamic> threadMessages = threads[threadId]["messages"];
-                    return MessageBox(widget.user, threadId, threadName, threadLastMessage, threadMessages);
+                    String threadId = _threads.keys.elementAt(index);
+                    String threadName = _threads[threadId]["name"];
+                    String threadLastMessage = _threads[threadId]["lastMessage"];
+                    String unread = _threads[threadId]["unread"];
+                    MessageThread thread = MessageThread(name: threadName, id: threadId, previewMessage: threadLastMessage, unread: unread);
+                    return MessageBox(widget.user, thread);
                   },
                 );
                 } else{
-                  return Expanded(child: Center(child: Text("No Messages")));
+                  return Expanded(child: Center(child: Text("No conversations")));
                 }
               }  
             )
@@ -88,13 +89,10 @@ class _MessagesPage extends State<MessagesPage>{
 
 class MessageBox extends StatefulWidget{
 
-  final User user;
-  final String threadId;
-  final String threadName;
-  final String threadPreview;
-  Map<dynamic, dynamic> threadMessages;
+  User user;
+  MessageThread thread;
 
-  MessageBox(this.user, this.threadId, this.threadName, this.threadPreview, this.threadMessages);
+  MessageBox(this.user, this.thread);
 
   @override
   _MessageBox createState() => _MessageBox();
@@ -105,7 +103,7 @@ class _MessageBox extends State<MessageBox>{
   Widget build(BuildContext context){
     return RaisedButton(
       color: Colors.white,
-      onPressed: (){ Navigator.push(context, MaterialPageRoute(builder: (context) => MessageThreadPage(widget.user, widget.threadId, widget.threadName))); },
+      onPressed: (){ Navigator.push(context, MaterialPageRoute(builder: (context) => MessageThreadPage(widget.user, widget.thread))); },
       elevation: 0.0,
       child: Container(
       height: 75.0,
@@ -126,13 +124,13 @@ class _MessageBox extends State<MessageBox>{
                   children: <Widget>[
                     Row(
                       children: [
-                        Text(widget.threadName, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold))
+                        Text(widget.thread.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold))
                       ],
                     ),
                     Row(
                       children: [
                         Expanded(
-                          child: Text(widget.threadPreview, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.black45))
+                          child: Text(widget.thread.previewMessage, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.black45))
                         )
                       ]
                     )

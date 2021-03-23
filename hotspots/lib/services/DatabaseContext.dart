@@ -12,6 +12,7 @@ class DbService{
   DatabaseReference _users;
   DatabaseReference _posts;
   DatabaseReference _locations;
+  DatabaseReference _messages;
 
   DatabaseReference _user;
 
@@ -20,6 +21,7 @@ class DbService{
     _users = _db.reference().child("Users");
     _posts = _db.reference().child("Posts");
     _locations = _db.reference().child("Locations");
+    _messages = _db.reference().child("Messages");
     _user = _db.reference().child("Users").child(this.user.uid);
   }
 
@@ -31,41 +33,81 @@ class DbService{
     });
   }
 
-  void createMessageThread(MessageThread thread, Message message){
-    var threadId = _user.child("inbox").push().key;
-    var messageId = _user.child("inbox").child(threadId).push().key;
-    thread.participants.forEach((uid, username){
-      _users.child(uid).child("inbox").child(threadId).set({ "name": thread.name });
-      thread.participants.forEach((id, name){
-        _users.child(uid).child("inbox").child(threadId).child("participants").set({ id: name});
-      });
-      _users.child(uid).child("inbox").child(threadId).child("messages").child(messageId).set({
-        "sender": message.sender,
-        "time": message.date,
-        "content": message.content
-      });
+  void sendMessage(MessageThread thread, Message message){
+    bool newThread = thread.id == null;
+    if (thread.id == null){
+      thread.id = _messages.push().key;
+    }
+    var messageId = _messages.child(thread.id).push().key;
+
+    // UPDATING THE USERS INBOX
+    thread.participants.forEach((participant){
+      if(participant.username == message.sender){
+        _users.child(participant.uid).child("inbox").update({
+          thread.id:{
+            "unread": "false",
+            "lastMessage": message.content,
+            "name": thread.name
+          }
+        });
+      } else{
+        _users.child(participant.uid).child("inbox").update({
+          thread.id:{
+            "unread": "true",
+            "lastMessage": message.content,
+            "name": thread.name
+          }
+        });
+      }
     });
+
+    // UPDATING THE MESSAGES THREAD
+    if(newThread){
+      _messages.child(thread.id).update({
+        "name": thread.name,
+        "messages": {
+          messageId:{
+            "sender": message.sender,
+            "time": message.time,
+            "content": message.content
+          }
+        }
+      });
+    } else{
+      _messages.child(thread.id).child("messages").update({
+        messageId: {
+          "sender": message.sender,
+          "time": message.time,
+          "content": message.content
+        }
+      });
+    }
+
+    // INSERTING ALL THE PARTICIPANTS
+    if(newThread){
+      thread.participants.forEach((_participant){
+        _messages.child(thread.id).child("participants").update({
+          _participant.uid: _participant.username
+        });
+      });
+    }
   }
 
-  Future<DataSnapshot> getMessages(){
+  Future<DataSnapshot> getThreads(){
     return _user.child("inbox").once();
-  }
-
-  void sendMessage(Map<dynamic,dynamic> participants, String threadId, String threadName, String message){
-    participants.forEach((key, value){
-      _users.child(key).child("messages").child(threadId).set({ "name": threadName });
-      _users.child(key).child("messages").child(threadId).child("thread").set({ "message": message });
-    });
-    _user.child("messages").child(threadId).set({ "name": threadName });
-    _user.child("messages").child(threadId).child("thread").set({ "message": message });
   }
 
   Future<DataSnapshot> getFollowedList(){
     return _user.child("following").once();
   }
 
-  Future<DataSnapshot> getThreadMessages(String threadId){
-    return _user.child("inbox").child(threadId).child("messages").once();
+  Future<DataSnapshot> getThreadInformation(String threadId){
+    assert(threadId != null);
+    return _messages.child(threadId).once();
+  }
+
+  Future<DataSnapshot> getRandomUsers(){
+    return _users.once();
   }
 
 }
