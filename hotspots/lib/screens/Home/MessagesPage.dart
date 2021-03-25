@@ -69,12 +69,6 @@ class _MessagesPage extends State<MessagesPage>{
                 }
               }  
             )
-              // child: ListView(
-              //   shrinkWrap: true,
-              //   physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-              //   children: [
-              //     MessageBox("Sandra", "This is a message")
-              //   ],
           ],
         )
       )
@@ -94,6 +88,7 @@ class MessageBox extends StatefulWidget{
 }
 
 class _MessageBox extends State<MessageBox>{
+
   @override
   Widget build(BuildContext context){
     return RaisedButton(
@@ -118,14 +113,23 @@ class _MessageBox extends State<MessageBox>{
                 child: Column(
                   children: <Widget>[
                     Row(
-                      children: [
-                        Text(widget.thread.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold))
+                      children: <Widget>[
+                        Text(widget.thread.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold)),
+                        if(widget.thread.unread == "true")
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 5, vertical: 0),
+                          child: Container(
+                            height: 10, 
+                            width: 10,
+                            decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.red),
+                          )
+                        )
                       ],
                     ),
                     Row(
-                      children: [
+                      children: <Widget>[
                         Expanded(
-                          child: Text(widget.thread.previewMessage, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.black45))
+                          child: Text(widget.thread.previewMessage, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.black54))
                         )
                       ]
                     )

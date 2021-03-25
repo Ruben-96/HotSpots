@@ -21,6 +21,7 @@ class _MessageThreadPage extends State<MessageThreadPage>{
   String typedMessage = "";
   GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
 
+
   @override
   Widget build(BuildContext context){
     DbService _db = DbService(widget.user);
@@ -51,13 +52,22 @@ class _MessageThreadPage extends State<MessageThreadPage>{
                     if(snapshot.data.value == null){
                       return Column(children: <Widget>[Expanded(child: Center(child: Text("No Messages")))],);
                     }
+                    _db.sendReadNotification(widget.user, widget.thread.id);
                     List<CustomUser> _participants = new List<CustomUser>();
-                    snapshot.data.value["participants"].forEach((id, name){ _participants.add(CustomUser.public(id, name));});
+                    Map<String, String> lastOpenedTimes = new Map<String,String>();
+                    snapshot.data.value["participants"].forEach((id, info){ _participants.add(CustomUser.public(id, info["username"])); lastOpenedTimes[info["username"]] = info["lastOpened"]; });
                     _thread.participants = _participants;
                     snapshot.data.value["messages"].forEach((id, messageInfo){
                       messages.add(Message(sender: messageInfo["sender"], time: messageInfo["time"], content: messageInfo["content"]));
                     });
+                    bool read = false;
                     messages.sort((a, b) => a.time.compareTo(b.time));
+                    String lastSentMessage = messages.lastWhere((message) => message.sender == widget.user.displayName).time;
+                    lastOpenedTimes.forEach((user, time){
+                      if(time.compareTo(lastSentMessage) >= 0){
+                        read = true;
+                      }
+                    });
                     return ListView.builder(
                       shrinkWrap: true,
                       itemCount: messages.length,
@@ -67,7 +77,14 @@ class _MessageThreadPage extends State<MessageThreadPage>{
                         if(index > 0){
                           showName = messages.elementAt(index - 1).sender != messages.elementAt(index).sender;
                         }
-                        return MessageBubble(messages.elementAt(index), isSender, showName);
+                        if(widget.thread.participants.length == 2){
+                          showName = false;
+                        }
+                        if(index == messages.lastIndexWhere((message) => message.sender == widget.user.displayName)){
+                          return MessageBubble(messages.elementAt(index), isSender, showName, read);  
+                        } else{
+                          return MessageBubble(messages.elementAt(index), isSender, showName, false);
+                        }
                       },
                     );
                   }
@@ -101,7 +118,7 @@ class _MessageThreadPage extends State<MessageThreadPage>{
                         _db.sendMessage(_thread, _message);
                         setState((){
                           typedMessage = "";
-                          messages.removeRange(0, messages.length - 1);
+                          messages = new List<Message>();
                           _formKey.currentState.reset();
                         });
                       },)
@@ -121,11 +138,11 @@ class MessageBubble extends StatelessWidget{
   final bool isSender;
   final bool showName;
   final Message message;
+  final bool read;
 
-  MessageBubble(this.message, this.isSender, this.showName);
-
+  MessageBubble(this.message, this.isSender, this.showName, this.read);
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context){ 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 0, vertical: 2.5),
       child: Column(
@@ -150,12 +167,19 @@ class MessageBubble extends StatelessWidget{
               Expanded(
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: Container(
-                    decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(20)), color: Colors.blue),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      child: Text(message.content, style: TextStyle(color: Colors.white))
-                    )
+                  child: Column(
+                    children: <Widget>[
+                      Container(
+                        constraints: BoxConstraints(maxWidth: 250),
+                        decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(10)), color: Colors.blue),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          child: Text(message.content, style: TextStyle(color: Colors.white))
+                        )
+                      ),
+                      if(read)
+                      Text("Read")
+                    ],
                   ) 
                 )
               )
@@ -163,13 +187,18 @@ class MessageBubble extends StatelessWidget{
               Expanded(
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: Container(
-                    decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(20)), color: Colors.blue),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      child: Text(message.content, style: TextStyle(color: Colors.white))
-                    )
-                  ) 
+                  child: Column(
+                    children: <Widget>[
+                      Container(
+                        constraints: BoxConstraints(maxWidth: 250),
+                        decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(20)), color: Colors.black12),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          child: Text(message.content, style: TextStyle(color: Colors.black))
+                        )
+                      ),
+                    ],
+                  )
                 )
               )
             ],

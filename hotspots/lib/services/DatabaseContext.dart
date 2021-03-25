@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:hotspots/models/customuser.dart';
@@ -29,6 +31,16 @@ class DbService{
     assert(user.uid != null);
     _users.child(user.uid).set({
       "username": user.username
+    });
+  }
+
+  // SENDING READ NOTIFICATION WHEN OPENING THREAD
+  void sendReadNotification(User user, String threadId){
+    _user.child("inbox").child(threadId).update({
+      "unread": "false"
+    });
+    _messages.child(threadId).child("participants").child(user.uid).update({
+      "lastOpened": DateTime.now().toString()
     });
   }
 
@@ -86,7 +98,10 @@ class DbService{
     if(newThread){
       thread.participants.forEach((_participant){
         _messages.child(thread.id).child("participants").update({
-          _participant.uid: _participant.username
+          _participant.uid:{
+            "username": _participant.username,
+            "lastOpened": "NULL"
+          }
         });
       });
     }
@@ -94,6 +109,10 @@ class DbService{
 
   Future<DataSnapshot> getThreads(){
     return _user.child("inbox").once();
+  }
+
+  Stream<Event> getNewThreads(){
+    return _user.child("inbox").onValue;
   }
 
   Future<DataSnapshot> getFollowedList(){
