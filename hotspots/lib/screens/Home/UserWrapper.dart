@@ -49,7 +49,7 @@ class _UserWrapper extends State<UserWrapper>{
             children: [
               HomePage(widget.user),
               DiscoverPage(widget.user),
-              UploadPage(widget.user),
+              UploadPage(),
               MessagesPage(widget.user),
               ProfilePage(widget.user),
             ],
@@ -100,7 +100,8 @@ class _UserWrapper extends State<UserWrapper>{
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.person_rounded),
-                label: "Profile"
+                label: "Profile",
+
               )
             ]
           ),

@@ -1,168 +1,291 @@
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:uuid/uuid.dart';
+import 'dart:async';
+import 'dart:io';
+import 'location.dart';
+import 'package:geocoder/geocoder.dart';
 
-/*
-##########################
-###  Upload Page Code  ###
-##########################
-*/
-class UploadPage extends StatefulWidget{
-
-  final User user;
-
-  UploadPage(this.user);
-
-  @override
+class UploadPage extends StatefulWidget {
   _UploadPage createState() => _UploadPage();
 }
 
-class _UploadPage extends State<UploadPage>{
+class _UploadPage extends State<UploadPage> {
+  File file;
+  //Strings required to save address
+  Address address;
+
+  Map<String, double> currentLocation = Map();
+  TextEditingController descriptionController = TextEditingController();
+  TextEditingController locationController = TextEditingController();
+  ImagePicker imagePicker = ImagePicker();
+
+  bool uploading = false;
 
   @override
+  initState() {
+    //variables with location assigned as 0.0
+    currentLocation['latitude'] = 0.0;
+    currentLocation['longitude'] = 0.0;
+    initPlatformState(); //method to call location
+    super.initState();
+  }
+
+  //method to get Location and save into variables
+  initPlatformState() async {
+    Address first = await getUserLocation();
+    setState(() {
+      address = first;
+    });
+  }
+
   Widget build(BuildContext context) {
-    return Material(
-      child: Center(
-        child: Text("Upload Page")
-      )
+
+    return file == null
+        ? IconButton(
+        icon: Icon(Icons.add),
+        onPressed: () => {_selectImage(context)})
+        : Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          backgroundColor: Colors.white70,
+          leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: clearImage),
+          title: const Text(
+            'Post to',
+            style: const TextStyle(color: Colors.black),
+          ),
+          actions: <Widget>[
+            FlatButton(
+                onPressed: postImage,
+                child: Text(
+                  "Post",
+                  style: TextStyle(
+                      color: Colors.blueAccent,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20.0),
+                ))
+          ],
+        ),
+        body: ListView(
+          children: <Widget>[
+            PostForm(
+              imageFile: file,
+              descriptionController: descriptionController,
+              locationController: locationController,
+              loading: uploading,
+            ),
+            Divider(), //scroll view where we will show location to users
+            (address == null)
+                ? Container()
+                : SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.only(right: 5.0, left: 5.0),
+              child: Row(
+                children: <Widget>[
+                  buildLocationButton(address.featureName),
+                  buildLocationButton(address.subLocality),
+                  buildLocationButton(address.locality),
+                  buildLocationButton(address.subAdminArea),
+                  buildLocationButton(address.adminArea),
+                  buildLocationButton(address.countryName),
+                ],
+              ),
+            ),
+            (address == null) ? Container() : Divider(),
+          ],
+        ));
+  }
+
+  //method to build buttons with location.
+  buildLocationButton(String locationName) {
+    if (locationName != null ?? locationName.isNotEmpty) {
+      return InkWell(
+        onTap: () {
+          locationController.text = locationName;
+        },
+        child: Center(
+          child: Container(
+            //width: 100.0,
+            height: 30.0,
+            padding: EdgeInsets.only(left: 8.0, right: 8.0),
+            margin: EdgeInsets.only(right: 3.0, left: 3.0),
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(5.0),
+            ),
+            child: Center(
+              child: Text(
+                locationName,
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+          ),
+        ),
+      );
+    } else {
+      return Container();
+    }
+  }
+
+  _selectImage(BuildContext parentContext) async {
+    return showDialog<Null>(
+      context: parentContext,
+      barrierDismissible: false, // user must tap button!
+
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: const Text('Create a Post'),
+          children: <Widget>[
+            SimpleDialogOption(
+                child: const Text('Take a photo'),
+                onPressed: () async {
+                  Navigator.pop(context);
+                  PickedFile imageFile =
+                  await imagePicker.getImage(source: ImageSource.camera, maxWidth: 1920, maxHeight: 1200, imageQuality: 80);
+                  setState(() {
+                    file = File(imageFile.path);
+                  });
+                }),
+            SimpleDialogOption(
+                child: const Text('Choose from Gallery'),
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  PickedFile imageFile =
+                  await imagePicker.getImage(source: ImageSource.gallery, maxWidth: 1920, maxHeight: 1200, imageQuality: 80);
+                  setState(() {
+                    file = File(imageFile.path);
+                  });
+                }),
+            SimpleDialogOption(
+              child: const Text("Cancel"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            )
+          ],
+        );
+      },
     );
   }
 
+  void clearImage() {
+    setState(() {
+      file = null;
+    });
+  }
+
+  void postImage() {
+    setState(() {
+      uploading = true;
+    });
+    uploadImage(file).then((String data) {
+      postToFireStore(
+          mediaUrl: data,
+          description: descriptionController.text,
+          location: locationController.text);
+    }).then((_) {
+      setState(() {
+        file = null;
+        uploading = false;
+      });
+    });
+  }
 }
 
-/*
-################################################
-###  Camera preview working with code below  ###
-################################################
-// 
-*/
-// class _UploadPage extends State<UploadPage>{
+class PostForm extends StatelessWidget {
+  final imageFile;
+  final TextEditingController descriptionController;
+  final TextEditingController locationController;
+  final bool loading;
+  PostForm(
+      {this.imageFile,
+        this.descriptionController,
+        this.loading,
+        this.locationController});
 
-//   CameraController _controller;
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        loading
+            ? LinearProgressIndicator()
+            : Padding(padding: EdgeInsets.only(top: 0.0)),
+        Divider(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            //CircleAvatar(
+            //  backgroundImage: NetworkImage(currentUserModel.photoUrl),
+            //),
+            Container(
+              width: 250.0,
+              child: TextField(
+                controller: descriptionController,
+                decoration: InputDecoration(
+                    hintText: "Write a caption...", border: InputBorder.none),
+              ),
+            ),
+            Container(
+              height: 45.0,
+              width: 45.0,
+              child: AspectRatio(
+                aspectRatio: 487 / 451,
+                child: Container(
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                        fit: BoxFit.fill,
+                        alignment: FractionalOffset.topCenter,
+                        image: FileImage(imageFile),
+                      )),
+                ),
+              ),
+            ),
+          ],
+        ),
+        Divider(),
+        ListTile(
+          leading: Icon(Icons.pin_drop),
+          title: Container(
+            width: 250.0,
+            child: TextField(
+              controller: locationController,
+              decoration: InputDecoration(
+                  hintText: "Where was this photo taken?",
+                  border: InputBorder.none),
+            ),
+          ),
+        )
+      ],
+    );
+  }
+}
 
-//   String route = "/camera";
+Future<String> uploadImage(var imageFile) async {
+  var uuid = Uuid().v1();
+  Reference ref = FirebaseStorage.instance.ref().child("post_$uuid.jpg");
+  UploadTask uploadTask = ref.putFile(imageFile);
 
-//   @override
-//   Widget build(BuildContext context){
-//     return Stack(
-//       children: [
-//         MaterialApp(
-//           initialRoute: route,
-//           routes: {
-//             '/camera': (BuildContext ctx) => _Camera(_controller),
-//             '/gallery': (BuildContext ctx) => _Gallery(_controller)
-//           }
-//         ),
-//         Padding(
-//           padding: EdgeInsets.symmetric(horizontal: 30, vertical: 0),
-//           child: Row(
-//             children: [
-//               ElevatedButton(child: Text("Capture", style:TextStyle(color: Colors.white)), onPressed: (){ setState((){ route = "/gallery"; });},)
-//             ],
-//           ),
-//         )
-//       ],
-//     );
-//   }
-// }
+  String downloadUrl = await (await uploadTask).ref.getDownloadURL();
+  return downloadUrl;
+}
 
-// /*
-// ######################################
-// ###  Camera to capture images code ###
-// ######################################
-// */
-// class _Camera extends StatefulWidget{
-//   final loadingWidget;
-//   @override
-//   _Camera(this.loadingWidget);
+void postToFireStore(
+    {String mediaUrl, String location, String description}) async {
+  var reference = FirebaseFirestore.instance.collection('hotspots_posts');
 
-//   _CameraState createState() => _CameraState();
-// }
-
-// class _CameraState extends State<_Camera> with WidgetsBindingObserver{
-
-//   List<CameraDescription> _cameras;
-//   CameraController _controller;
-//   int _camIdx = 0;
-  
-//   @override
-//   void initState(){
-//     super.initState();
-//     setupCamera();
-//     WidgetsBinding.instance.addObserver(this);
-//   }
-
-//   @override
-//   void dispose(){
-//     WidgetsBinding.instance.addObserver(this);
-//     _controller?.dispose();
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     if (_controller == null) {
-//       if (widget.loadingWidget != null) {
-//         return widget.loadingWidget;
-//       } else {
-//         return Container(
-//           color: Colors.black,
-//         );
-//       }
-//     } else {
-//       return CameraPreview(_controller);
-//     }
-//   }
-
-//   @override
-//   void didChangeAppLifecycleState(AppLifecycleState state) async {
-//     if (_controller == null || !_controller.value.isInitialized) {
-//       return;
-//     }
-
-//     if (state == AppLifecycleState.inactive) {
-//       _controller?.dispose();
-//     } else if (state == AppLifecycleState.resumed) {
-//       setupCamera();
-//     }
-//   }
-
-//   Future<void> setupCamera() async{
-//     _cameras = await availableCameras();
-//     var controller = await selectCamera();
-//     setState(() => _controller = controller);
-//   }
-
-//   selectCamera() async{
-//     var controller = CameraController(_cameras[_camIdx], ResolutionPreset.low);
-//     await controller.initialize();
-//     return controller;
-//   }
-
-//   toggleCamera() async {
-//     int newSelected = (_camIdx + 1) % _cameras.length;
-//     _camIdx = newSelected;
-    
-//     var controller = await selectCamera();
-//     setState(() => _controller = controller);
-//   }
-// }
-
-// /*
-// #############################
-// ###  Gallery Widget code  ###
-// #############################
-// */
-// class _Gallery extends StatefulWidget{
-//   final loadingWidget;
-//   _Gallery(this.loadingWidget);
-//   @override
-//   _GalleryState createState() => _GalleryState();
-// }
-
-// class _GalleryState extends State<_Gallery>{
-//   @override
-//   Widget build(BuildContext context){
-//     return MaterialApp();
-//   }
-// }
+  reference.add({
+    "username": "test",//currentUserModel.username, TODO:
+    "location": location,
+    "likes": {},
+    "mediaUrl": mediaUrl,
+    "description": description,
+    "ownerId": "test",//googleSignIn.currentUser.id, TODO:
+    "timestamp": DateTime.now(),
+  }).then((DocumentReference doc) {
+    String docId = doc.id;
+    reference.doc(docId).update({"postId": docId});
+  });
+}
