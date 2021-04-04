@@ -25,7 +25,7 @@ class _MessageThreadPage extends State<MessageThreadPage>{
   @override
   Widget build(BuildContext context){
     DbService _db = DbService(widget.user);
-    List<Message> messages = new List<Message>();
+    List<Message> messages = <Message>[];
     MessageThread _thread = widget.thread;
     return Material(
       child: Padding(
@@ -53,7 +53,7 @@ class _MessageThreadPage extends State<MessageThreadPage>{
                       return Column(children: <Widget>[Expanded(child: Center(child: Text("No Messages")))],);
                     }
                     _db.sendReadNotification(widget.user, widget.thread.id);
-                    List<CustomUser> _participants = new List<CustomUser>();
+                    List<CustomUser> _participants = <CustomUser>[];
                     Map<String, String> lastOpenedTimes = new Map<String,String>();
                     snapshot.data.value["participants"].forEach((id, info){ _participants.add(CustomUser.public(id, info["username"])); lastOpenedTimes[info["username"]] = info["lastOpened"]; });
                     _thread.participants = _participants;
@@ -61,14 +61,19 @@ class _MessageThreadPage extends State<MessageThreadPage>{
                       messages.add(Message(sender: messageInfo["sender"], time: messageInfo["time"], content: messageInfo["content"]));
                     });
                     bool read = false;
-                    messages.sort((a, b) => a.time.compareTo(b.time));
-                    String lastSentMessage = messages.lastWhere((message) => message.sender == widget.user.displayName).time;
+                    if(messages.length > 1){
+                      messages.sort((a, b) => a.time.compareTo(b.time));
+                    }
+                    String lastSentMessage = DateTime.utc(3000).toString();
+                    if(messages.any((message) => message.sender == widget.user.displayName)){
+                      lastSentMessage = messages.lastWhere((message) => message.sender == widget.user.displayName).time;
+                    }
                     lastOpenedTimes.forEach((user, time){
                       if(time.compareTo(lastSentMessage) >= 0){
                         read = true;
                       }
                     });
-                    return ListView.builder(
+                    return new ListView.builder(
                       shrinkWrap: true,
                       itemCount: messages.length,
                       itemBuilder: (BuildContext context, int index){
@@ -118,7 +123,7 @@ class _MessageThreadPage extends State<MessageThreadPage>{
                         _db.sendMessage(_thread, _message);
                         setState((){
                           typedMessage = "";
-                          messages = new List<Message>();
+                          messages = <Message>[];
                           _formKey.currentState.reset();
                         });
                       },)

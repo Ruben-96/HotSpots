@@ -41,6 +41,31 @@ class _MessagesPage extends State<MessagesPage>{
               )
             ),
             Divider(color: Colors.black54, thickness: 1.0),
+            // StreamBuilder(
+            //   initialData: ,
+            //   stream: _db.getNewThreads(),
+            //   builder: (context, snapshot){
+            //     if(snapshot.hasError){
+            //       return Text(snapshot.error);
+            //     } else{
+            //       if(snapshot.hasData){
+            //         return ListView.builder(
+            //           shrinkWrap: true,
+            //           itemCount: snapshot.length,
+            //           itemBuilder: (BuildContext context, int index){
+            //             String threadId = _threads.keys.elementAt(index);
+            //             String threadName = _threads[threadId]["name"];
+            //             String threadLastMessage = _threads[threadId]["lastMessage"];
+            //             String unread = _threads[threadId]["unread"];
+            //             MessageThread thread = MessageThread(name: threadName, id: threadId, previewMessage: threadLastMessage, unread: unread);
+            //             return MessageBox(widget.user, thread);
+            //           }
+            //         );
+            //       }
+            //     }
+            //     return Expanded(child: Center(child: Text("No conversations")));
+            //   }
+            // )
             FutureBuilder(
               future: _db.getThreads(),
               builder: (context, snapshot){
