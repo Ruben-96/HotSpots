@@ -49,7 +49,7 @@ class _UserWrapper extends State<UserWrapper>{
             children: [
               HomePage(widget.user),
               DiscoverPage(widget.user),
-              UploadPage(),
+              UploadPage(widget.user),
               MessagesPage(widget.user),
               ProfilePage(widget.user),
             ],

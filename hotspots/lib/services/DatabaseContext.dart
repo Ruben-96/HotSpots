@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:hotspots/models/customuser.dart';
 import 'package:hotspots/models/messages.dart';
 
@@ -10,17 +12,18 @@ class DbService{
   User user;
 
   final FirebaseDatabase _db = FirebaseDatabase.instance;
+  final FirebaseStorage _store = FirebaseStorage.instance;
+
   DatabaseReference _users;
-  //DatabaseReference _posts;
+  DatabaseReference _posts;
   //DatabaseReference _locations;
   DatabaseReference _messages;
-
   DatabaseReference _user;
 
   DbService(User user){
     this.user = user;
     _users = _db.reference().child("Users");
-    //_posts = _db.reference().child("Posts");
+    _posts = _db.reference().child("Posts");
     //_locations = _db.reference().child("Locations");
     _messages = _db.reference().child("Messages");
     _user = _db.reference().child("Users").child(this.user.uid);
@@ -128,4 +131,12 @@ class DbService{
     return _users.once();
   }
 
+  Future<void> uploadPost(String fileName, File file, String postLocationl, String postCaption) async {
+    await _store.ref().child("uploads/$fileName").putFile(file);
+    _posts.child(fileName).set(
+      {
+        "fileLocation": "uploads/$fileName",
+      }
+    );
+  }
 }
