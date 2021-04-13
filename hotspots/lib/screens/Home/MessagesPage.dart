@@ -1,13 +1,12 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hotspots/models/messages.dart';
 import 'package:hotspots/screens/Home/MessagesSubpages/MessageThreadPage.dart';
 import 'package:hotspots/screens/Home/MessagesSubpages/NewMessagePage.dart';
-import 'package:hotspots/services/DatabaseContext.dart';
 
 class MessagesPage extends StatefulWidget{
-
   final User user;
 
   MessagesPage(this.user);
@@ -17,154 +16,211 @@ class MessagesPage extends StatefulWidget{
 }
 
 class _MessagesPage extends State<MessagesPage>{
+
   @override
-  Widget build(BuildContext context){
-    final DbService _db = DbService(widget.user);
-    Map<dynamic, dynamic> _threads = new Map<dynamic, dynamic>();
-    return Material(
-      color: Colors.white,
-      child:Padding(
-        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
-        child: Column(
-          children: [
-            SizedBox(height: 30.0),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 0.0),
-              child: Row(
-                children: [
-                  Expanded(child: Text("Messages", style: TextStyle(fontSize: 24.0))),
-                  IconButton(
-                    icon: Icon(Icons.person_add), 
-                    onPressed: (){ Navigator.push(context, MaterialPageRoute(builder: (context) => NewMessagePage(widget.user))); }
-                  ),
-                ],
-              )
-            ),
-            Divider(color: Colors.black54, thickness: 1.0),
-            // StreamBuilder(
-            //   initialData: ,
-            //   stream: _db.getNewThreads(),
-            //   builder: (context, snapshot){
-            //     if(snapshot.hasError){
-            //       return Text(snapshot.error);
-            //     } else{
-            //       if(snapshot.hasData){
-            //         return ListView.builder(
-            //           shrinkWrap: true,
-            //           itemCount: snapshot.length,
-            //           itemBuilder: (BuildContext context, int index){
-            //             String threadId = _threads.keys.elementAt(index);
-            //             String threadName = _threads[threadId]["name"];
-            //             String threadLastMessage = _threads[threadId]["lastMessage"];
-            //             String unread = _threads[threadId]["unread"];
-            //             MessageThread thread = MessageThread(name: threadName, id: threadId, previewMessage: threadLastMessage, unread: unread);
-            //             return MessageBox(widget.user, thread);
-            //           }
-            //         );
-            //       }
-            //     }
-            //     return Expanded(child: Center(child: Text("No conversations")));
-            //   }
-            // )
-            FutureBuilder(
-              future: _db.getThreads(),
-              builder: (context, snapshot){
-                if(snapshot.hasError){
-                  return Text(snapshot.error.toString());
-                } else{
-                  if(snapshot.hasData){
-                    _threads = snapshot.data.value;
-                  }
-                }
-                if(_threads != null){
-                return ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: _threads.length,
-                  itemBuilder: (BuildContext context, int index){
-                    String threadId = _threads.keys.elementAt(index);
-                    String threadName = _threads[threadId]["name"];
-                    String threadLastMessage = _threads[threadId]["lastMessage"];
-                    String unread = _threads[threadId]["unread"];
-                    MessageThread thread = MessageThread(name: threadName, id: threadId, previewMessage: threadLastMessage, unread: unread);
-                    return MessageBox(widget.user, thread);
-                  },
-                );
-                } else{
-                  return Expanded(child: Center(child: Text("No conversations")));
-                }
-              }  
-            )
-          ],
-        )
-      )
-    );
+  void initState(){
+    super.initState();
   }
-}
-
-class MessageBox extends StatefulWidget{
-
-  final User user;
-  final MessageThread thread;
-
-  MessageBox(this.user, this.thread);
 
   @override
-  _MessageBox createState() => _MessageBox();
-}
+  void dispose(){
 
-class _MessageBox extends State<MessageBox>{
+    super.dispose();
+  }
+
+  String getThreadName(Map<String, dynamic> members){
+    String threadName = "";
+    members.forEach((key, value) {
+      if(!(value == widget.user.displayName)){
+        threadName += value + ", ";
+      }
+    });
+    return threadName.substring(0, threadName.lastIndexOf(","));
+  }
 
   @override
   Widget build(BuildContext context){
-    return RaisedButton(
-      color: Colors.white,
-      onPressed: (){ Navigator.push(context, MaterialPageRoute(builder: (context) => MessageThreadPage(widget.user, widget.thread))); },
-      elevation: 0.0,
-      child: Container(
-      height: 75.0,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-        child: Row(
+    return Column(
+      children: <Widget>[
+        Row(
           children: <Widget>[
-            Container(
-              height: 50.0,
-              width: 50.0,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.black12),
-            ),
             Expanded(
               child: Container(
-                margin: EdgeInsets.fromLTRB(5.0,5.0,0.0,0.0),
-                alignment: Alignment.bottomLeft,
-                child: Column(
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Text(widget.thread.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold)),
-                        if(widget.thread.unread == "true")
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 5, vertical: 0),
-                          child: Container(
-                            height: 10, 
-                            width: 10,
-                            decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.red),
-                          )
-                        )
-                      ],
-                    ),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(widget.thread.previewMessage, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.black54))
-                        )
-                      ]
-                    )
-                  ],
+                color: Colors.red.shade400,
+                height: 75,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0),
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(child: Text("Messages", style: TextStyle(fontSize: 24, color: Colors.white)),),
+                      IconButton(
+                        icon: Icon(Icons.group_add, color: Colors.white, size: 36), 
+                        onPressed: (){ Navigator.push(context, MaterialPageRoute(builder: (context) => NewMessagePage(widget.user))); },
+                      )
+                    ],
+                  )
                 )
               )
             )
           ],
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 50, vertical: 5.0),
+          child: Container(
+            height: 35,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(30), color: Colors.red.shade100),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+              child: Row(
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(0, 0, 5, 0),
+                    child: Icon(Icons.search, color: Colors.black54)
+                  ),
+                  Expanded(
+                    child: TextFormField(
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontSize: 16
+                      ), 
+                      decoration: InputDecoration(
+                        hintText: "Search", 
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(vertical: 10)
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.0),
+            child: StreamBuilder(
+              stream: FirebaseFirestore.instance.collection("MessageThreads")
+                                                .where("threadMembers." + widget.user.uid, isEqualTo: widget.user.displayName)
+                                                .snapshots(),
+              builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+                if(snapshot.hasError || !snapshot.hasData || snapshot.data.docs.isEmpty) return new Container(child: Center(child: Text("No conversations", textDirection: TextDirection.ltr,)));
+                return new ListView(
+                  children: snapshot.data.docs.map((DocumentSnapshot document){
+                    String threadName = document["threadName"] == null ? getThreadName(document["threadMembers"]) : document["threadName"];
+                    return new ThreadContainer(user: widget.user, name: threadName, lastMessage: document["lastMessage"], id: document.id, openedBy: document["lastMessage"]["openedBy"]);
+                  }).toList()
+                );
+              },
+            )
+          )
         )
-      )
-    ));
+      ],
+    );
   }
+}
+
+class ThreadContainer extends StatefulWidget{
+
+  User user;
+  String name;
+  String id;
+  Map<String, dynamic> lastMessage;
+  List<dynamic> openedBy;
+
+  ThreadContainer({this.user, this.name, this.id, this.lastMessage, this.openedBy});
+
+  @override
+  _ThreadContainer createState() => _ThreadContainer();
+}
+
+class _ThreadContainer extends State<ThreadContainer>{
+
+  @override
+  Widget build(BuildContext context){
+    return ElevatedButton(
+      style: ButtonStyle(
+        elevation: MaterialStateProperty.all<double>(0),
+        backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
+        minimumSize: MaterialStateProperty.all<Size>(Size.fromHeight(75)),
+      ),
+      onPressed: (){ 
+        MessageThread thread = new MessageThread(id: widget.id, name: widget.name);
+        Navigator.push(context, MaterialPageRoute(builder: (context) => MessageThreadPage(widget.user, thread))); 
+      },
+      child: Container(
+        child: Row(
+          children: <Widget>[
+            if(!widget.openedBy.contains(widget.user.displayName))
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Container(
+                height: 50,
+                width: 50,
+                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.black45, border: Border.all(color: Colors.red.shade300, width: 3.0)),
+                child: Icon(Icons.person, size: 36)
+              ),
+            )
+            else
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Container(
+                height: 50,
+                width: 50,
+                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.black45,),
+                child: Icon(Icons.person, size: 36)
+              ),
+            ),
+            Expanded(
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Text(
+                          widget.name, 
+                          style: TextStyle(
+                            color: Colors.black87
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        )
+                      )
+                    ],
+                  ),
+                  Row(
+                    children: <Widget>[
+                      if(widget.openedBy.contains(widget.user.displayName))
+                      Expanded(
+                        child: Text(
+                          widget.lastMessage["content"],
+                          style: TextStyle(
+                            color: Colors.black45
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        )
+                      )
+                      else
+                      Expanded(
+                        child: Text(
+                          widget.lastMessage["content"],
+                          style: TextStyle(
+                            color: Colors.black54
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        )
+                      )
+                    ],
+                  )
+                ],
+              )
+            )
+            
+          ],
+        )
+      ),
+    );
+  }
+
 }

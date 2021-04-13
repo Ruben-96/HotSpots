@@ -101,7 +101,6 @@ class _UserWrapper extends State<UserWrapper>{
               BottomNavigationBarItem(
                 icon: Icon(Icons.person_rounded),
                 label: "Profile",
-
               )
             ]
           ),

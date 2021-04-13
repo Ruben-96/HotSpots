@@ -1,9 +1,12 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hotspots/models/customuser.dart';
 import 'package:hotspots/models/messages.dart';
-import 'package:hotspots/services/DatabaseContext.dart';
+import 'package:hotspots/screens/Home/MessagesSubpages/MessageThreadSettingsPage.dart';
 
 class MessageThreadPage extends StatefulWidget{
 
@@ -18,121 +21,246 @@ class MessageThreadPage extends StatefulWidget{
 
 class _MessageThreadPage extends State<MessageThreadPage>{
 
-  String typedMessage = "";
-  GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+  FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  DocumentReference threadIdRef;
+  StreamSubscription<DocumentSnapshot> threadInfo;
+  StreamSubscription<DocumentSnapshot> messages;
 
+  String threadId;
+  String messageContent = "";
+  bool newThread = true;
+  String previousSender;
+
+  final _key = new GlobalKey<FormState>();
+
+  @override
+  void initState(){
+    super.initState();
+    if(widget.thread.id == null){
+      threadIdRef = _firestore.collection("MessageThreads").doc();
+      threadId = threadIdRef.id;
+    } else{
+      threadId = widget.thread.id;
+      newThread = false;
+    }
+  }
+
+  @override
+  void dispose(){
+    super.dispose();
+  }
+
+  String getThreadName(List<CustomUser> members){
+    members.sort((a,b) => a.username.compareTo(b.username));
+    String threadName = "";
+    members.forEach((member) {
+      if(!(member.username == widget.user.displayName)){
+        threadName += member.username + ", ";
+      }
+    });
+    return threadName.substring(0, threadName.lastIndexOf(","));
+  }
+
+  void createThread(List<CustomUser> participants, String messageContent) async{
+    Map<String, dynamic> threadMembers = Map<String, dynamic>();
+    participants.forEach((member){
+      threadMembers[member.uid] = member.username;
+    });
+    await _firestore.collection("MessageThreads").doc(threadId)
+              .set({
+                "threadName": null,
+                "threadPictureLocation": null,
+                "threadMembers": threadMembers,
+                "lastMessage": {
+                  "content": messageContent,
+                  "sender": widget.user.displayName,
+                  "time": Timestamp.now(),
+                  "openedBy": [widget.user.displayName]
+                }
+              });
+    _firestore.collection("MessageThreads")
+              .doc(threadId)
+              .collection("threadMessages")
+              .add({
+                "content": messageContent,
+                "sender": widget.user.displayName,
+                "time": Timestamp.now()
+              });
+  }
+
+  void sendMessage(String messageContent){
+    _firestore.collection("MessageThreads")
+              .doc(threadId)
+              .collection("threadMessages")
+              .add({
+                "content": messageContent,
+                "sender": widget.user.displayName,
+                "time": Timestamp.now(),
+              });
+    _firestore.collection("MessageThreads")
+              .doc(threadId)
+              .update({
+                "lastMessage": {
+                  "content": messageContent,
+                  "sender": widget.user.displayName,
+                  "time": Timestamp.now(),
+                  "openedBy": [widget.user.displayName]
+                }
+              });
+  }
 
   @override
   Widget build(BuildContext context){
-    DbService _db = DbService(widget.user);
-    List<Message> messages = <Message>[];
-    MessageThread _thread = widget.thread;
+
     return Material(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
-        child: Column(
-          children: <Widget>[
-            SizedBox(height: 30.0),
-            Row(
-              children: <Widget>[
-                IconButton(icon: Icon(Icons.arrow_back), onPressed: (){ Navigator.pop(context); },),
-                Expanded(child: Text(_thread.name, style: TextStyle(fontSize: 24.0)),)
-              ],
-            ),
-            Divider(color: Colors.black54, thickness: 1.0),
-            if(_thread.id != null)
-            Expanded(
-              child: FutureBuilder(
-                future: _db.getThreadInformation(_thread.id),
-                builder: (context, snapshot){
-                  if(snapshot.hasError){
-                    return Text(snapshot.error.toString());
-                  }
-                  if(snapshot.hasData){
-                    if(snapshot.data.value == null){
-                      return Column(children: <Widget>[Expanded(child: Center(child: Text("No Messages")))],);
-                    }
-                    _db.sendReadNotification(widget.user, widget.thread.id);
-                    List<CustomUser> _participants = <CustomUser>[];
-                    Map<String, String> lastOpenedTimes = new Map<String,String>();
-                    snapshot.data.value["participants"].forEach((id, info){ _participants.add(CustomUser.public(id, info["username"])); lastOpenedTimes[info["username"]] = info["lastOpened"]; });
-                    _thread.participants = _participants;
-                    snapshot.data.value["messages"].forEach((id, messageInfo){
-                      messages.add(Message(sender: messageInfo["sender"], time: messageInfo["time"], content: messageInfo["content"]));
-                    });
-                    bool read = false;
-                    if(messages.length > 1){
-                      messages.sort((a, b) => a.time.compareTo(b.time));
-                    }
-                    String lastSentMessage = DateTime.utc(3000).toString();
-                    if(messages.any((message) => message.sender == widget.user.displayName)){
-                      lastSentMessage = messages.lastWhere((message) => message.sender == widget.user.displayName).time;
-                    }
-                    lastOpenedTimes.forEach((user, time){
-                      if(time.compareTo(lastSentMessage) >= 0){
-                        read = true;
-                      }
-                    });
-                    return new ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: messages.length,
-                      itemBuilder: (BuildContext context, int index){
-                        bool isSender = messages.elementAt(index).sender == widget.user.displayName;
-                        bool showName = true;
-                        if(index > 0){
-                          showName = messages.elementAt(index - 1).sender != messages.elementAt(index).sender;
-                        }
-                        if(widget.thread.participants.length == 2){
-                          showName = false;
-                        }
-                        if(index == messages.lastIndexWhere((message) => message.sender == widget.user.displayName)){
-                          return MessageBubble(messages.elementAt(index), isSender, showName, read);  
-                        } else{
-                          return MessageBubble(messages.elementAt(index), isSender, showName, false);
-                        }
-                      },
-                    );
-                  }
-                  return Column(children: <Widget>[Expanded(child: Center(child: CircularProgressIndicator()))]);
-                }
-              ),
-            ),
-            if(_thread.id == null)
-            Expanded(
-              child: Center(
-                child: Text("Start a new conversation")
-              )
-            ),
-            Container(
-              child: Form(
-                key: _formKey,
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: TextFormField(
-                        decoration: InputDecoration(hintText: "Message..."),
-                        onChanged: (value){
-                          typedMessage = value;
-                        },
-                      )
-                    ),
-                    IconButton(icon: Icon(Icons.send),
-                      onPressed: (){
-                        assert(typedMessage != "");
-                        Message _message = Message(sender: widget.user.displayName, time: DateTime.now().toString(), content: typedMessage);
-                        _db.sendMessage(_thread, _message);
-                        setState((){
-                          typedMessage = "";
-                          messages = <Message>[];
-                          _formKey.currentState.reset();
-                        });
-                      },)
-                  ],
+      child: Column(
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  color: Colors.red.shade400,
+                  height: 75,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0),
+                    child: Row(
+                      children: <Widget>[
+                        IconButton(
+                          icon: Icon(Icons.arrow_back_ios, color: Colors.white, size: 36),
+                          onPressed: (){
+                            Navigator.pop(context);
+                          },
+                        ),
+                        if(widget.thread.name == null)
+                        Expanded(
+                          child: Text(getThreadName(widget.thread.participants), style: TextStyle(color: Colors.white, fontSize: 24))
+                        )
+                        else
+                        Expanded(
+                          child: Text(widget.thread.name, style: TextStyle(color: Colors.white, fontSize: 24))
+                        ),
+                        //if(threadId != null)
+                        // IconButton(
+                        //   icon: Icon(Icons.settings, color: Colors.white, size: 36),
+                        //   onPressed: (){
+                        //     Navigator.push(context, MaterialPageRoute(builder: (context) => MessageThreadSettingsPage(widget.user, widget.thread)));
+                        //   },
+                        // )
+                      ],
+                    )
+                  ),
                 )
               )
+            ],
+          ),
+          if(newThread)
+          Expanded(
+            child: Center(
+                      child: Container(
+                        height: 200,
+                        child: Column(
+                          children: <Widget>[
+                            Container(
+                              height: 100,
+                              width: 100,
+                              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.black45),
+                              child: Icon(Icons.person, size: 36, color: Colors.white)
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 5),
+                              child: Text("Start a conversation", style: TextStyle(fontSize: 18, color: Colors.black45))
+                            )
+                          ],
+                        )
+                      )
+                    )
+          )
+          else
+          Expanded(
+            child: Padding( padding: EdgeInsets.symmetric(horizontal: 10), child: StreamBuilder(
+              stream: FirebaseFirestore.instance.collection("MessageThreads").doc(threadId).collection("threadMessages").orderBy("time", descending: false).snapshots(),
+              builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+                if(!snapshot.hasData || snapshot.data.docs.isEmpty) return Center(child: CircularProgressIndicator());
+                return new ListView(
+                  children: snapshot.data.docs.map((DocumentSnapshot document){
+                    Message message = Message(content: document["content"], sender: document["sender"], time: document["time"].toString());
+                    bool display = false;
+                    if(previousSender == null){
+                      previousSender = document["sender"];
+                    } else{
+                      display = document["sender"] == previousSender;
+                      previousSender = document["sender"];
+                    }
+                    return MessageBubble(message, 
+                                        document["sender"] == widget.user.displayName, 
+                                        !display && document["sender"] != widget.user.displayName, 
+                                        false);
+                  }).toList()
+                );
+              },
             )
-          ],
-        )
+          )),
+          Divider(thickness: 1.0, color: Colors.black38,),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 5),
+                    child: Form(
+                      key: _key,
+                      child: TextFormField(
+                      autofocus: false,
+                      minLines: 1,
+                      maxLines: 5,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide.none,
+                          borderRadius: BorderRadius.circular(10),
+                          gapPadding: 4
+                        ),
+                        hintText: "Message...",
+                        fillColor: Colors.black12, 
+                        filled: true,
+                      ),
+                      style: TextStyle(color: Colors.black54,),
+                      onChanged: (value){
+                        messageContent = value;
+                      },
+                    )
+                    )
+                  )
+                ),
+                TextButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.blue.shade400),
+                    padding: MaterialStateProperty.all<EdgeInsets>(EdgeInsets.symmetric(horizontal: 1, vertical: 1)),
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(
+                        side: BorderSide(color: Colors.blue.shade400, style: BorderStyle.solid, width: 2.0), 
+                        borderRadius: BorderRadius.circular(20)
+                    ))
+                  ),
+                  child: Text("Send", style: TextStyle(color: Colors.white, fontSize: 14)),
+                  onPressed: (){
+                    if(messageContent == "" || messageContent == null) return;
+                    if(widget.thread.id == null){
+                      createThread(widget.thread.participants, messageContent);
+                    } else{
+                      sendMessage(messageContent);
+                    }
+                    setState((){
+                      _key.currentState.reset();
+                      messageContent = "";
+                      newThread = false;
+                    });
+                  },
+                )
+              ],
+            )
+          )
+        ],
       )
     );
   }
@@ -179,7 +307,7 @@ class MessageBubble extends StatelessWidget{
                         decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(10)), color: Colors.blue),
                         child: Padding(
                           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          child: Text(message.content, style: TextStyle(color: Colors.white))
+                          child: Text(message.content, style: TextStyle(color: Colors.white, fontSize: 18))
                         )
                       ),
                       if(read)

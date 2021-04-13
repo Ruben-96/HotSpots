@@ -174,7 +174,7 @@ class _CameraView extends State<CameraView>{
     if(!controller.value.isInitialized){
       return Container(
         child: Center(
-          child: Text("Not working")
+          child: Text("ERROR")
         )
       );
     }
@@ -199,46 +199,40 @@ class _CameraView extends State<CameraView>{
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
             child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
-              Expanded(
-                child: Container(),
-              ),
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  Column(),
+                  Expanded(
+                    child: Container()
+                  ),
                   Expanded(
                     child: Center(
                       child: GestureDetector(
                         child: Container(
-                          decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white70),
-                          height: 80,
-                          width: 80
+                          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 8.0)),
+                          height: 70,
+                          width: 70,
+                          child: Icon(Icons.camera_outlined, color: Colors.white, size: 32)
                         ),
                         onTap: () async{
                           XFile fileLocation = await controller.takePicture();
                           widget.setFile(fileLocation);
                         },
                       )
-                      // child: ElevatedButton(
-                      //   style: ButtonStyle(
-                      //     backgroundColor: MaterialStateProperty.all<Color>(Colors.white70),
-                      //     shape: MaterialStateProperty.all<CircleBorder>(CircleBorder()),
-                      //     minimumSize: MaterialStateProperty.all<Size>(Size.fromRadius(40))
-                      //   ),
-                      //   child: Container(),
-                      //   onPressed: () async{
-                      //     XFile fileLocation = await controller.takePicture();
-                      //     widget.setFile(fileLocation);
-                      //   },
-                      //   onLongPress: () async{
-                      //     await controller.startVideoRecording();
-                      //     XFile fileLocation = await controller.stopVideoRecording();
-                      //     widget.setFile(fileLocation);
-                      //   },
-                      // )
                     )
                   ),
-                  Column()
+                  Expanded(
+                    child: IconButton(
+                    icon: Icon(Icons.image, size: 32, color: Colors.white),
+                    onPressed:() async {
+                      PickedFile pickedFile =  await ImagePicker().getImage(source: ImageSource.gallery);
+                      widget.setFile(XFile(pickedFile.path));
+                    }
+                  )
+                  )
                 ],
               )
             ],
