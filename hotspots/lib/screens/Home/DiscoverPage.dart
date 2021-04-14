@@ -18,15 +18,15 @@ class _DiscoverPage extends State<DiscoverPage>{
   Completer<GoogleMapController> _controller = Completer();
   final Set<Heatmap> _heatmaps = {};
   static final CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
+    target: LatLng(32.73060330871282, -97.1129670622124),
+    zoom: 17.0,
   );
-  LatLng _heatmapLocation = LatLng(37.42796133580664, -122.085749655962);
+  LatLng _heatmapLocation = LatLng(32.733114, -97.112524);
   static final CameraPosition _kLake = CameraPosition(
-      bearing: 192.8334901395799,
-      target: LatLng(37.43296265331129, -122.08832357078792),
+      bearing: 190,
+      target: LatLng(32.733114, -97.112524),
       tilt: 59.440717697143555,
-      zoom: 19.151926040649414);
+      zoom: 10.0);
 
   @override
   Widget build(BuildContext context) {
@@ -41,8 +41,8 @@ class _DiscoverPage extends State<DiscoverPage>{
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addHeatmap,
-        label: Text('Add Heatmap'),
-        icon: Icon(Icons.add_box),
+        label: Text('Refresh'),
+        icon: Icon(Icons.refresh),
       ),
     );
   }
@@ -52,10 +52,10 @@ class _DiscoverPage extends State<DiscoverPage>{
           Heatmap(
               heatmapId: HeatmapId(_heatmapLocation.toString()),
               points: _createPoints(_heatmapLocation),
-              radius: 20,
+              radius: 50,
               visible: true,
               gradient:  HeatmapGradient(
-                  colors: <Color>[Colors.green, Colors.red], startPoints: <double>[0.2, 0.8]
+                  colors: <Color>[Colors.green, Colors.red], startPoints: <double>[0.05, 1.00]
               )
           )
       );
