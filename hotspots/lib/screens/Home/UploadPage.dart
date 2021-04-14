@@ -3,6 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hotspots/models/customuser.dart';
+import 'package:hotspots/screens/Home/UploadSubpages/CameraPreviewPage.dart';
+import 'package:hotspots/screens/Home/UploadSubpages/FilePreviewPage.dart';
+import 'package:hotspots/screens/Home/UploadSubpages/NewPostPage.dart';
 import 'package:hotspots/services/DatabaseContext.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -26,220 +29,50 @@ class UploadPage extends StatefulWidget{
 class _UploadPage extends State<UploadPage>{
 
   List<CameraDescription> cameras;
-  XFile fileLocation;
-  String postLocation;
-  String postCaption;
+  XFile file;
 
   @override
   void initState(){
     super.initState();
-    availableCameras().then((availableCameras) {
-      cameras = availableCameras;
-    });
   }
 
-  @override
-  Widget build(BuildContext context){
-
-    DbService _db = DbService(widget.user);
-
-    if(cameras == null)
-    return Container(
-      color: Colors.black
-    );
-    if(fileLocation == null)
-    return CameraView(cameras, setFile);
-    else
-    return Material(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-        child: Column(
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                TextButton(
-                  child: Text("X", style: TextStyle(fontSize: 24, color: Colors.black),), 
-                  onPressed: (){
-                    setState((){
-                      fileLocation = null;
-                    });
-                  },
-                ),
-                Expanded(
-                  child: Text("Upload", style: TextStyle(fontSize: 24),),
-                ),
-                IconButton(
-                  icon: Icon(Icons.cloud_upload_outlined), 
-                  onPressed: (){
-                    _db.uploadPost(fileLocation.name,File(fileLocation.path), postLocation, postCaption);
-                    setState((){
-                      fileLocation = null;
-                    });
-                  },
-                )
-              ],
-            ),
-            Divider(color: Colors.black),
-            Column(
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        color: Colors.black,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-                          child: Column(
-                            children: <Widget>[
-                              Image.file(File(fileLocation.path))
-                            ],
-                          )
-                        )
-                      )
-                    )
-                  ],
-                ),
-                Row(
-                  children: <Widget>[
-                    IconButton(icon: Icon(Icons.location_on_rounded), onPressed: (){},),
-                    Expanded(child: TextFormField(decoration: InputDecoration(hintText: "Location"), onChanged: (val){ postLocation = val; },))
-                  ],
-                ),
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: TextFormField(
-                        decoration: InputDecoration(hintText: "Caption..."),
-                        maxLines: 8,
-                        minLines: 8,
-                        onChanged: (val){
-                          postCaption = val;
-                        },
-                      ),
-                    )
-                  ]
-                )
-              ],
-            )
-          ],
-        )
-      )
-    );
-  }
-
-  void setFile(XFile file){
-    setState((){
-      fileLocation = file;
-    });
-  }
-
-}
-
-
-class CameraView extends StatefulWidget{
-
-  List<CameraDescription> cameras;
-  final setFile;
-  CameraView(this.cameras, this.setFile);
-
-  @override
-  _CameraView createState() => _CameraView();
-
-}
-
-class _CameraView extends State<CameraView>{
-  
-  CameraController controller;
-
-  @override
-  void initState(){
-    super.initState();
-    controller = CameraController(widget.cameras[0], ResolutionPreset.medium);
-    controller.initialize().then((_){
-      if(!mounted){
-        return;
-      }
-      setState(() {});
-    });
-  }
-  
   @override
   void dispose(){
-    controller?.dispose();
     super.dispose();
   }
 
+  void setFile(XFile newFile) async{
+    setState((){
+      file = newFile;
+    });
+  }
+
+  void unsetFile(){
+    setState((){
+      file = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context){
-    if(!controller.value.isInitialized){
+
+    availableCameras().then((availableCameras) {
+      cameras = availableCameras;
+    });
+
+    if(cameras == null){
       return Container(
+        color: Colors.black,
         child: Center(
-          child: Text("ERROR")
+          child: CircularProgressIndicator()
         )
       );
     }
-    return Container(
-      color: Colors.black,
-      child: Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          Column(
-            children: <Widget>[
-              Expanded(
-                  child: RotatedBox(
-                    quarterTurns: 0,
-                    child: AspectRatio(
-                      aspectRatio: controller.value.aspectRatio,
-                      child: CameraPreview(controller)
-                    ),
-                  )
-              )
-            ],
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-            child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: <Widget>[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Expanded(
-                    child: Container()
-                  ),
-                  Expanded(
-                    child: Center(
-                      child: GestureDetector(
-                        child: Container(
-                          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 8.0)),
-                          height: 70,
-                          width: 70,
-                          child: Icon(Icons.camera_outlined, color: Colors.white, size: 32)
-                        ),
-                        onTap: () async{
-                          XFile fileLocation = await controller.takePicture();
-                          widget.setFile(fileLocation);
-                        },
-                      )
-                    )
-                  ),
-                  Expanded(
-                    child: IconButton(
-                    icon: Icon(Icons.image, size: 32, color: Colors.white),
-                    onPressed:() async {
-                      PickedFile pickedFile =  await ImagePicker().getImage(source: ImageSource.gallery);
-                      widget.setFile(XFile(pickedFile.path));
-                    }
-                  )
-                  )
-                ],
-              )
-            ],
-          ),)
-        ],
-      )
-    );
+
+    if(file == null)
+    return CameraPreviewPage(widget.user, cameras, setFile);
+
+    return FilePreviewPage(widget.user, file, unsetFile);
   }
 }
 

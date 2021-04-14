@@ -2,15 +2,17 @@ import 'dart:io';
 
 class Post{
 
-  final String postId;
+  String postId;
 
-  final String creatorId;
+  String creatorId;
 
-  final String creatorUsername;
+  String creatorUsername;
 
-  final String caption;
+  String caption;
 
-  final File data;
+  String location;
+
+  File data;
 
   Post({this.postId, this.creatorId, this.creatorUsername, this.caption, this.data});
 

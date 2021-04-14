@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
 
@@ -92,6 +96,27 @@ class _HomeUIState extends State<HomeUI>{
           ),
         ]
       ),
+      body: Stack(
+        children: <Widget>[
+          FutureBuilder(
+            future: FirebaseFirestore.instance.collection("Posts").get(),
+            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+              if(snapshot.hasError || !snapshot.hasData) return new Center(child: CircularProgressIndicator());
+              return ListView.builder(
+                shrinkWrap: true,
+                itemCount: snapshot.data.docs.length,
+                itemBuilder: (BuildContext context, int index){
+                  Map<String, dynamic> info = snapshot.data.docs.elementAt(index).data();
+                  String downloadURI = FirebaseStorage.instance.ref().child(info["fileLocation"]).getDownloadURL();
+                  
+                  print(file == null);
+                  return Image.file(file);
+                },
+              );
+            }
+          )
+        ],
+      )
     );
   }
 }
