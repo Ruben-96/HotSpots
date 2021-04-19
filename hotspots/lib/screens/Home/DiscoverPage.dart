@@ -21,7 +21,7 @@ class _DiscoverPage extends State<DiscoverPage>{
     target: LatLng(32.73060330871282, -97.1129670622124),
     zoom: 17.0,
   );
-  LatLng _heatmapLocation = LatLng(32.733114, -97.112524);
+
   static final CameraPosition _kLake = CameraPosition(
       bearing: 190,
       target: LatLng(32.733114, -97.112524),
@@ -47,15 +47,72 @@ class _DiscoverPage extends State<DiscoverPage>{
     );
   }
   void _addHeatmap(){
+    LatLng _heatmapLocation = LatLng(32.733114, -97.112524);
+    List<WeightedLatLng> heatmapPoints = _createPoints(_heatmapLocation);
+
+    _heatmapLocation = LatLng(32.73060330871282, -97.1129670622124);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.729, -97.1130);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.7285, -97.1135);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.7298, -97.1129);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.731114, -97.112724);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.732114, -97.112824);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.733514, -97.112554);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.733314, -97.112624);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.733214, -97.112574);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.73414, -97.112654);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+    _heatmapLocation = LatLng(32.733314, -97.112624);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.733214, -97.112574);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.73514, -97.112754);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.73414, -97.112454);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.73414, -97.112654);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+    _heatmapLocation = LatLng(32.733344, -97.112724);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.733234, -97.112374);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.73344, -97.112654);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.735314, -97.112554);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
     setState(() {
       _heatmaps.add(
           Heatmap(
               heatmapId: HeatmapId(_heatmapLocation.toString()),
-              points: _createPoints(_heatmapLocation),
+              points: heatmapPoints,
               radius: 50,
               visible: true,
               gradient:  HeatmapGradient(
-                  colors: <Color>[Colors.green, Colors.red], startPoints: <double>[0.05, 1.00]
+                  colors: <Color>[Colors.green, Colors.red], startPoints: <double>[0.05, 0.50]
               )
           )
       );

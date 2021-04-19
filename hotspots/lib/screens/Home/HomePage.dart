@@ -107,10 +107,10 @@ class _HomeUIState extends State<HomeUI>{
                 itemCount: snapshot.data.docs.length,
                 itemBuilder: (BuildContext context, int index){
                   Map<String, dynamic> info = snapshot.data.docs.elementAt(index).data();
-                  String downloadURI = FirebaseStorage.instance.ref().child(info["fileLocation"]).getDownloadURL();
+                  //String downloadURI = FirebaseStorage.instance.ref().child(info["fileLocation"]).getDownloadURL();
                   
-                  print(file == null);
-                  return Image.file(file);
+                  //print(file == null);
+                  return null; //Image.file(file);
                 },
               );
             }
