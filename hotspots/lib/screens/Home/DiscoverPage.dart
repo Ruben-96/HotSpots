@@ -50,6 +50,8 @@ class _DiscoverPage extends State<DiscoverPage>{
     LatLng _heatmapLocation = LatLng(32.733114, -97.112524);
     List<WeightedLatLng> heatmapPoints = _createPoints(_heatmapLocation);
 
+    //TODO: for each post in the past day whose coordinates are in the visible area, add a heatmap point with said coordinates
+
     _heatmapLocation = LatLng(32.73060330871282, -97.1129670622124);
     heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
 

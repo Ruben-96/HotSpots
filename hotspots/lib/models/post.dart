@@ -12,6 +12,8 @@ class Post{
 
   String location;
 
+  double lat, long;
+
   File data;
 
   Post({this.postId, this.creatorId, this.creatorUsername, this.caption, this.data});
