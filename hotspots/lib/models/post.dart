@@ -2,18 +2,27 @@ import 'dart:io';
 
 class Post{
 
-  String postId;
+  String postId ="";
 
-  String creatorId;
+  String creatorId = "";
 
-  String creatorUsername;
+  String uploader = "";
 
-  String caption;
+  String caption = "";
 
-  String location;
+  String location = "";
+
+  String fileLocation = "";
+
+  int likesCount = 0;
+
+  int commentsCount = 0;
+
+  String fileURL = "";
 
   File data;
 
-  Post({this.postId, this.creatorId, this.creatorUsername, this.caption, this.data});
+  Post({this.postId, this.creatorId, this.uploader, this.caption, this.data, this.location, this.fileLocation,
+   this.likesCount, this.commentsCount, this.fileURL});
 
 }

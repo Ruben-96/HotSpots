@@ -25,14 +25,21 @@ class _NewPostPage extends State<NewPostPage>{
   
   Post post;
 
-  void uploadFile(Post post){
+  void uploadFile(Post post) async{
     String firebaseLocation = "Posts/" + post.postId;
-    FirebaseFirestore.instance.collection("Posts").doc(post.postId).set({
+    String downloadURL;
+    await FirebaseStorage.instance.ref().child(firebaseLocation).putFile(File(widget.file.path)).then((snapshot) async{
+      downloadURL = await snapshot.ref.getDownloadURL();
+    });
+    await FirebaseFirestore.instance.collection("Posts").doc(post.postId).set({
       "caption": post.caption,
       "location": post.location,
-      "fileLocation": firebaseLocation
+      "fileLocation": firebaseLocation,
+      "likeCount": 0,
+      "commentCount": 0,
+      "fileURL": downloadURL,
+      "uploader": widget.user.displayName
     });
-    FirebaseStorage.instance.ref().child(firebaseLocation).putFile(File(widget.file.path));
   }
 
   void setLocation(String location){

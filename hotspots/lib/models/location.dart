@@ -1,5 +1,6 @@
  class Location{
-   String name;
+
+  String name;
 
 
   Location([this.name]);

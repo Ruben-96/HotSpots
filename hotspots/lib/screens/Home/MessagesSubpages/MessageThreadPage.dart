@@ -42,6 +42,9 @@ class _MessageThreadPage extends State<MessageThreadPage>{
     } else{
       threadId = widget.thread.id;
       newThread = false;
+      _firestore.collection("MessageThreads").doc(threadId).update({
+        "lastMessage.openedBy": FieldValue.arrayUnion([widget.user.displayName])
+      });
     }
   }
 
