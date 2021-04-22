@@ -20,6 +20,8 @@ class Post{
 
   String fileURL = "";
 
+  double lat, long;
+
   File data;
 
   Post({this.postId, this.creatorId, this.uploader, this.caption, this.data, this.location, this.fileLocation,

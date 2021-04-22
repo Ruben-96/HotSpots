@@ -18,15 +18,15 @@ class _DiscoverPage extends State<DiscoverPage>{
   Completer<GoogleMapController> _controller = Completer();
   final Set<Heatmap> _heatmaps = {};
   static final CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
+    target: LatLng(32.73060330871282, -97.1129670622124),
+    zoom: 17.0,
   );
-  LatLng _heatmapLocation = LatLng(37.42796133580664, -122.085749655962);
+
   static final CameraPosition _kLake = CameraPosition(
-      bearing: 192.8334901395799,
-      target: LatLng(37.43296265331129, -122.08832357078792),
+      bearing: 190,
+      target: LatLng(32.733114, -97.112524),
       tilt: 59.440717697143555,
-      zoom: 19.151926040649414);
+      zoom: 10.0);
 
   @override
   Widget build(BuildContext context) {
@@ -41,21 +41,80 @@ class _DiscoverPage extends State<DiscoverPage>{
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addHeatmap,
-        label: Text('Add Heatmap'),
-        icon: Icon(Icons.add_box),
+        label: Text('Refresh'),
+        icon: Icon(Icons.refresh),
       ),
     );
   }
   void _addHeatmap(){
+    LatLng _heatmapLocation = LatLng(32.733114, -97.112524);
+    List<WeightedLatLng> heatmapPoints = _createPoints(_heatmapLocation);
+
+    //TODO: for each post in the past day whose coordinates are in the visible area, add a heatmap point with said coordinates
+
+    _heatmapLocation = LatLng(32.73060330871282, -97.1129670622124);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.729, -97.1130);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.7285, -97.1135);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.7298, -97.1129);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.731114, -97.112724);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.732114, -97.112824);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.733514, -97.112554);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.733314, -97.112624);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.733214, -97.112574);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.73414, -97.112654);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+    _heatmapLocation = LatLng(32.733314, -97.112624);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.733214, -97.112574);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.73514, -97.112754);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.73414, -97.112454);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.73414, -97.112654);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+    _heatmapLocation = LatLng(32.733344, -97.112724);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.733234, -97.112374);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.73344, -97.112654);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+
+    _heatmapLocation = LatLng(32.735314, -97.112554);
+    heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
     setState(() {
       _heatmaps.add(
           Heatmap(
               heatmapId: HeatmapId(_heatmapLocation.toString()),
-              points: _createPoints(_heatmapLocation),
-              radius: 20,
+              points: heatmapPoints,
+              radius: 50,
               visible: true,
               gradient:  HeatmapGradient(
-                  colors: <Color>[Colors.green, Colors.red], startPoints: <double>[0.2, 0.8]
+                  colors: <Color>[Colors.green, Colors.red], startPoints: <double>[0.05, 0.50]
               )
           )
       );

@@ -214,6 +214,7 @@ class _HomeUIState extends State<HomeUI>{
             ),
           )
         ),
+<<<<<<< HEAD
         Expanded(
           child: Container(
             child: Row(
@@ -290,6 +291,62 @@ class _HomeUIState extends State<HomeUI>{
                 )
               ],
             )
+=======
+        actions: <Widget>[
+          TextButton(
+            child: Text("Following", style: TextStyle(color: Colors.white)),
+            onPressed: (){ print("Following"); },
+          ),
+          const Divider(
+            color: Colors.white,
+            height: 50.0,
+            thickness: 5.0,
+            indent: 20.0,
+            endIndent: 0.0,
+          ),
+          TextButton(
+            child: Text("Trending", style: TextStyle(color: Colors.white)),
+            onPressed: () {},
+          ),
+          const Divider(
+            color: Colors.white,
+            height: 50.0,
+            thickness: 5.0,
+            indent: 20.0,
+            endIndent: 0.0,
+          ),
+          TextButton(
+            child: Text("Local", style: TextStyle(color: Colors.white)),
+            onPressed: (){ print("Local"); },
+          ),
+          const Divider(
+            color: Colors.white,
+            height: 10.0,
+            thickness: 5.0,
+            indent: 20.0,
+            endIndent: 0.0,
+          ),
+        ]
+      ),
+      body: Stack(
+        children: <Widget>[
+          FutureBuilder(
+            future: FirebaseFirestore.instance.collection("Posts").get(),
+            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+              if(snapshot.hasError || !snapshot.hasData) return new Center(child: CircularProgressIndicator());
+              return ListView.builder(
+                shrinkWrap: true,
+                itemCount: snapshot.data.docs.length,
+                itemBuilder: (BuildContext context, int index){
+                  Map<String, dynamic> info = snapshot.data.docs.elementAt(index).data();
+                  //String downloadURI = FirebaseStorage.instance.ref().child(info["fileLocation"]).getDownloadURL();
+                  
+                  //print(file == null);
+                  return null; //Image.file(file);
+                },
+              );
+            }
+>>>>>>> 5bffee9a4055e9779411b1c60e1a599b340d77bb
           )
         ),
         Container(

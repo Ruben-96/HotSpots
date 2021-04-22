@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hotspots/models/post.dart';
 import 'package:hotspots/screens/Home/UploadSubpages/SelectLocationPage.dart';
+import 'package:geolocator/geolocator.dart';
 
 class NewPostPage extends StatefulWidget{
 
@@ -24,6 +25,8 @@ class NewPostPage extends StatefulWidget{
 class _NewPostPage extends State<NewPostPage>{
   
   Post post;
+  final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
+  Position _currentPosition;
 
   void uploadFile(Post post) async{
     String firebaseLocation = "Posts/" + post.postId;
@@ -33,12 +36,22 @@ class _NewPostPage extends State<NewPostPage>{
     });
     await FirebaseFirestore.instance.collection("Posts").doc(post.postId).set({
       "caption": post.caption,
+      "commentCount": 0,
+      "likeCount": 0,
       "location": post.location,
+<<<<<<< HEAD
       "fileLocation": firebaseLocation,
       "likeCount": 0,
       "commentCount": 0,
       "fileURL": downloadURL,
       "uploader": widget.user.displayName
+=======
+      "latitude": post.lat,
+      "longitude": post.long,
+      "fileLocation": firebaseLocation,
+      "uploader": widget.user.displayName,
+      "timestamp": FieldValue.serverTimestamp()
+>>>>>>> 5bffee9a4055e9779411b1c60e1a599b340d77bb
     });
   }
 
@@ -48,11 +61,53 @@ class _NewPostPage extends State<NewPostPage>{
     });
   }
 
+  void setCoordinates(double lat, double long) {
+    setState((){
+      post.lat = lat;
+      post.long = long;
+    });
+  }
+
+  _getCurrentLocation() {
+    geolocator
+        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
+        .then((Position position) {
+      setState(() {
+        _currentPosition = position;
+        post.lat = position.latitude;
+        post.long = position.longitude;
+      });
+
+      _getAddressFromLatLng();
+    }).catchError((e) {
+      print(e);
+    });
+  }
+
+  _getAddressFromLatLng() async {
+    try {
+      List<Placemark> p = await geolocator.placemarkFromCoordinates(
+          _currentPosition.latitude, _currentPosition.longitude);
+
+      Placemark place = p[0];
+
+      setState(() {
+        post.location =
+        "${place.locality}, ${place.administrativeArea}";
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+
   @override
   void initState(){
     super.initState();
     post = new Post();
     post.postId = FirebaseFirestore.instance.collection("Posts").doc().id;
+
+    _getCurrentLocation();
   }
 
   @override

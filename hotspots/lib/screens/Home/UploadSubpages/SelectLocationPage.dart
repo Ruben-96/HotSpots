@@ -1,7 +1,7 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hotspots/models/location.dart';
+
 
 class SelectLocationPage extends StatefulWidget{
 
@@ -16,6 +16,11 @@ class SelectLocationPage extends StatefulWidget{
 class _SelectLocationPage extends State<SelectLocationPage>{
 
   String query = "";
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context){
@@ -76,15 +81,25 @@ class _SelectLocationPage extends State<SelectLocationPage>{
                                             .get(),
           builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
             if(snapshot.hasError || !snapshot.hasData) return new Center(child: CircularProgressIndicator());
-            return ListView.builder(
-              shrinkWrap: true,
-              itemCount: snapshot.data.docs.length,
-              itemBuilder: (BuildContext context, int index){
-                Map<String, dynamic> info = snapshot.data.docs.elementAt(index).data();
-                Location location = Location(info["name"]);
-                return LocationContainer(location, widget.setLocation);
-              }
-            );
+            return  Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).canvasColor,
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Column(
+                  children: <Widget>[
+            ListView.builder(
+            shrinkWrap: true,
+            itemCount: snapshot.data.docs.length,
+            itemBuilder: (BuildContext context, int index){
+            Map<String, dynamic> info = snapshot.data.docs.elementAt(index).data();
+            Location location = Location(info["name"]);
+            return LocationContainer(location, widget.setLocation);
+            }
+            )
+                  ],
+                )); ////////
+
           }
         ))
         ],
