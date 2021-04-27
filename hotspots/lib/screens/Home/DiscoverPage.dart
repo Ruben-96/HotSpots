@@ -28,9 +28,19 @@ class _DiscoverPage extends State<DiscoverPage>{
       target: LatLng(32.733114, -97.112524),
       tilt: 59.440717697143555,
       zoom: 10.0);
+  LatLng _heatmapLocation = LatLng(0, 0);
+  List<WeightedLatLng> heatmapPoints;
+
+  FirebaseFirestore _fireStore = FirebaseFirestore.instance;
+
+  Future<QuerySnapshot> loadPosts(){
+    return _fireStore.collection("Posts").limit(100).get();
+  }
 
   @override
   Widget build(BuildContext context) {
+    heatmapPoints = _createPoints(_heatmapLocation);
+
     return new Scaffold(
       body: GoogleMap(
         mapType: MapType.normal,
@@ -40,59 +50,57 @@ class _DiscoverPage extends State<DiscoverPage>{
           _controller.complete(controller);
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _addHeatmap,
-        label: Text('Refresh'),
-        icon: Icon(Icons.refresh),
+      floatingActionButton: FutureBuilder(
+          future: loadPosts(),
+          builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+            if(snapshot.hasError || !snapshot.hasData) {
+              print("Data retrieval failed");
+              return new Center(child: CircularProgressIndicator());
+            }
+            else{
+              for(var i = 0; i < snapshot.data.docs.length; i++){
+                Map<String, dynamic> info = snapshot.data.docs.elementAt(i).data();
+
+                print(info["latitude"]);
+                print(info["longitude"]);
+                print("\n\n\n\n");
+                if(info["latitude"] != null) {
+                  _heatmapLocation = LatLng(double.parse("${info["latitude"]}"),
+                                            double.parse("${info["longitude"]}"));
+                  heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
+                }
+              }
+            }
+
+            _heatmaps.add(
+                Heatmap(
+                    heatmapId: HeatmapId(_heatmapLocation.toString()),
+                    points: heatmapPoints,
+                    radius: 50,
+                    visible: true,
+                    gradient:  HeatmapGradient(
+                        colors: <Color>[Colors.green, Colors.red], startPoints: <double>[0.05, 0.50]
+                    )
+                )
+            );
+
+            // this part does not get used but is required by the function
+            return Text("");
+          }
       ),
     );
   }
 
-  void _addHeatmap() async{
-    LatLng _heatmapLocation = LatLng(0, 0);
-    List<WeightedLatLng> heatmapPoints = _createPoints(_heatmapLocation);
-
-    //TODO: for each post in the past day whose coordinates are in the visible area, add a heatmap point with said coordinates
-    Widget serverHeatmapPoints = FutureBuilder(
-        future: FirebaseFirestore.instance.collection("Post")
-        //.where("timestamp", isGreaterThanOrEqualTo: "TODO: yesterday")
-            .limit(100)
-            .get(),
-        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
-          if(snapshot.hasError || !snapshot.hasData) return new Center(child: CircularProgressIndicator());
-          else{
-            for(var i = 0; i < snapshot.data.docs.length; i++){
-              Map<String, dynamic> info = snapshot.data.docs.elementAt(i).data();
-
-              _heatmapLocation = LatLng(info["latitude"], info["longitude"]);
-              heatmapPoints.insertAll(0, _createPoints(_heatmapLocation));
-            }
-          }
-          // this part does not get used but is required by the function
-          return Text('Hello, world!', textDirection: TextDirection.ltr,);
-        }
-    );
-
-    setState(() {
-      _heatmaps.add(
-          Heatmap(
-              heatmapId: HeatmapId(_heatmapLocation.toString()),
-              points: heatmapPoints,
-              radius: 50,
-              visible: true,
-              gradient:  HeatmapGradient(
-                  colors: <Color>[Colors.green, Colors.red], startPoints: <double>[0.05, 0.50]
-              )
-          )
-      );
-    });
+  void _addHeatmap(){
+    print(heatmapPoints);
   }
+
   //heatmap generation helper functions
   List<WeightedLatLng> _createPoints(LatLng location) {
     final List<WeightedLatLng> points = <WeightedLatLng>[];
     //Can create multiple points here
     points.add(_createWeightedLatLng(location.latitude,location.longitude, 1));
-    points.add(_createWeightedLatLng(location.latitude-1,location.longitude, 1));
+
     return points;
   }
 
