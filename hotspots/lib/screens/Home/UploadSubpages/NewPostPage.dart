@@ -39,19 +39,12 @@ class _NewPostPage extends State<NewPostPage>{
       "commentCount": 0,
       "likeCount": 0,
       "location": post.location,
-<<<<<<< HEAD
-      "fileLocation": firebaseLocation,
-      "likeCount": 0,
-      "commentCount": 0,
       "fileURL": downloadURL,
-      "uploader": widget.user.displayName
-=======
       "latitude": post.lat,
       "longitude": post.long,
       "fileLocation": firebaseLocation,
       "uploader": widget.user.displayName,
       "timestamp": FieldValue.serverTimestamp()
->>>>>>> 5bffee9a4055e9779411b1c60e1a599b340d77bb
     });
   }
 

@@ -49,16 +49,13 @@ class _DiscoverPage extends State<DiscoverPage>{
   }
 
   void _addHeatmap() async{
-    LatLng _heatmapLocation = LatLng(32.733114, -97.112524);
+    LatLng _heatmapLocation = LatLng(0, 0);
     List<WeightedLatLng> heatmapPoints = _createPoints(_heatmapLocation);
 
     //TODO: for each post in the past day whose coordinates are in the visible area, add a heatmap point with said coordinates
     Widget serverHeatmapPoints = FutureBuilder(
         future: FirebaseFirestore.instance.collection("Post")
         //.where("timestamp", isGreaterThanOrEqualTo: "TODO: yesterday")
-        //.where("latitude", isGreaterThan: "//TODO: map coordinate barrier").where("latitude", isLessThan: "TODO: map coordinate barrier")
-        //.where("longitude", isGreaterThan: "//TODO: map coordinate barrier").where("longitude", isLessThan: "TODO: map coordinate barrier"))
-
             .limit(100)
             .get(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
