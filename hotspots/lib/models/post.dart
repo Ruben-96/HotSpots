@@ -22,9 +22,11 @@ class Post{
 
   double lat, long;
 
+  List<dynamic> likedBy;
+
   File data;
 
   Post({this.postId, this.creatorId, this.uploader, this.caption, this.data, this.location, this.fileLocation,
-   this.likesCount, this.commentsCount, this.fileURL});
+   this.likesCount, this.commentsCount, this.fileURL, this.likedBy});
 
 }

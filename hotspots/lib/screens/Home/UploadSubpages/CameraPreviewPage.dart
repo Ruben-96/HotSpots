@@ -19,6 +19,7 @@ class CameraPreviewPage extends StatefulWidget{
 
 class _CameraPreviewPage extends State<CameraPreviewPage>{
   
+  int cameraView = 0;
   CameraController controller;
   XFile file;
 
@@ -38,6 +39,23 @@ class _CameraPreviewPage extends State<CameraPreviewPage>{
   void dispose(){
     controller?.dispose();
     super.dispose();
+  }
+
+  void swapCameraView(){
+    if(cameraView == 0){
+      cameraView = 1;
+    } else{
+      cameraView = 0;
+    }
+    controller = CameraController(widget.cameras[cameraView], ResolutionPreset.max, imageFormatGroup: ImageFormatGroup.jpeg);
+    controller.initialize().then((_){
+      if(!mounted){
+        return;
+      }
+      setState(() {
+        
+      });
+    });
   }
 
   @override
@@ -77,7 +95,12 @@ class _CameraPreviewPage extends State<CameraPreviewPage>{
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   Expanded(
-                    child: Container()
+                    child: IconButton(
+                      icon: Icon(Icons.flip_camera_ios_rounded, size: 32, color: Colors.white,),
+                      onPressed: () async{
+                        swapCameraView();
+                      },
+                    )
                   ),
                   Expanded(
                     child: Center(
