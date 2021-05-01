@@ -19,6 +19,8 @@ class CameraPreviewPage extends StatefulWidget{
 
 class _CameraPreviewPage extends State<CameraPreviewPage>{
   
+  Color hiddenValue = Colors.white;
+  Color circleColor = Colors.white;
   int cameraView = 0;
   CameraController controller;
   XFile file;
@@ -96,7 +98,7 @@ class _CameraPreviewPage extends State<CameraPreviewPage>{
                 children: <Widget>[
                   Expanded(
                     child: IconButton(
-                      icon: Icon(Icons.flip_camera_ios_rounded, size: 32, color: Colors.white,),
+                      icon: Icon(Icons.flip_camera_ios_rounded, size: 32, color: hiddenValue,),
                       onPressed: () async{
                         swapCameraView();
                       },
@@ -106,21 +108,32 @@ class _CameraPreviewPage extends State<CameraPreviewPage>{
                     child: Center(
                       child: GestureDetector(
                         child: Container(
-                          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 6.0)),
+                          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: circleColor, width: 6.0)),
                           height: 70,
                           width: 70,
-                          child: Icon(Icons.camera_outlined, color: Colors.white, size: 54)
+                          child: Icon(Icons.camera_outlined, color: circleColor, size: 54)
                         ),
                         onTap: () async{
                           XFile fileLocation = await controller.takePicture();
                           widget.setFile(fileLocation);
                         },
+                        onLongPressStart: (details) async{
+                          await controller.startVideoRecording();
+                          setState((){
+                            hiddenValue = Colors.transparent;
+                            circleColor = Colors.red.shade400;
+                          });
+                        },
+                        onLongPressUp: () async{
+                          XFile fileLocation = await controller.stopVideoRecording();
+                          widget.setFile(fileLocation);
+                        }
                       )
                     )
                   ),
                   Expanded(
                     child: IconButton(
-                    icon: Icon(Icons.image, size: 32, color: Colors.white),
+                    icon: Icon(Icons.image, size: 32, color: hiddenValue),
                     onPressed:() async {
                       PickedFile pickedFile =  await ImagePicker().getImage(source: ImageSource.gallery,);
                       widget.setFile(XFile(pickedFile.path));

@@ -20,12 +20,11 @@ class PostCommentsPage extends StatefulWidget{
 class _PostCommentsPage extends State<PostCommentsPage>{
 
   final _key = new GlobalKey<FormState>();
-  List<Comment> comments = <Comment>[];
 
   @override
   Widget build(BuildContext context){
 
-    comments = <Comment>[];
+    String newComment = "";
 
     return Material(
       child: Column(
@@ -80,7 +79,7 @@ class _PostCommentsPage extends State<PostCommentsPage>{
                       ),
                       style: TextStyle(color: Colors.black54, fontSize: 16,),
                       onChanged: (value){
-                        
+                        newComment = value;
                       },
                     )
                     )
@@ -97,30 +96,41 @@ class _PostCommentsPage extends State<PostCommentsPage>{
                   ),
                   child: Text("Post", style: TextStyle(color: Colors.white, fontSize: 14)),
                   onPressed: (){
+                    if(newComment != "" && newComment != null){
+                      FirebaseFirestore.instance.collection("Posts").doc(widget.post.postId).collection("comments").add({
+                        "commenterName": widget.user.displayName,
+                        "content": newComment,
+                        "timestamp": Timestamp.now()
+                      });
+                      FirebaseFirestore.instance.collection("Posts").doc(widget.post.postId).update({
+                        "commentCount": FieldValue.increment(1)
+                      });
+                      setState(() {
+                        newComment = "";
+                        _key.currentState.reset();
+                      });
+                    }
                   },
                 )
               ],
             )
           ),
           Expanded(
-            child: FutureBuilder(
-              future: FirebaseFirestore.instance.collection("Posts").doc(widget.post.postId).collection("comments").limit(30).orderBy("timestamp", descending: true).get(),
+            child: StreamBuilder(
+              stream: FirebaseFirestore.instance.collection("Posts").doc(widget.post.postId).collection("comments").limit(30).orderBy("timestamp", descending: true).snapshots(),
               builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
                 if(snapshot.hasError || !snapshot.hasData || snapshot.data.docs.length == 0) return Container(child: Center(child: CircularProgressIndicator())); 
-                snapshot.data.docs.forEach((doc) { 
-                  Map<String, dynamic> info = doc.data();
-                  comments.add(new Comment(commenterName: info["commenterName"], content: info["content"]));
-                });
                 return ListView.builder(
-                  itemCount: comments.length,
+                  itemCount: snapshot.data.docs.length,
                   itemBuilder: (BuildContext context, int index){
+                    Map<String, dynamic> info = snapshot.data.docs.elementAt(index).data();
                     return Padding(
                       padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
                       child: Row(
                         children: <Widget>[
-                          Text(comments.elementAt(index).commenterName, style: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600)),
+                          Text(info["commenterName"], style: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600)),
                           Expanded(
-                            child: Text(comments.elementAt(index).content, maxLines: 4, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.black87, fontSize: 12))
+                            child: Text(info["content"], maxLines: 4, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.black87, fontSize: 12))
                           )
                         ],
                       )

@@ -6,6 +6,7 @@ import 'package:camera/camera.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hotspots/screens/Home/UploadSubpages/NewPostPage.dart';
+import 'package:video_player/video_player.dart';
 
 class FilePreviewPage extends StatefulWidget{
 
@@ -20,6 +21,29 @@ class FilePreviewPage extends StatefulWidget{
 }
 
 class _FilePreviewPage extends State<FilePreviewPage>{
+
+  VideoPlayerController _controller;
+  Future<void> initializeVideoPlayerFuture;
+
+  @override
+  void initState(){
+    if(widget.file.name.endsWith(".mp4")){
+      print(widget.file.path);
+      _controller = VideoPlayerController.file(new File(widget.file.path));
+      print(_controller.dataSource);
+      initializeVideoPlayerFuture = _controller.initialize();
+      _controller.setLooping(true);
+      _controller.play();
+    }
+    super.initState();
+  }
+
+  @override
+  void dispose(){
+    _controller?.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context){
 
@@ -28,13 +52,36 @@ class _FilePreviewPage extends State<FilePreviewPage>{
       child: Stack(
       fit: StackFit.expand,
       children: <Widget>[
+        if(widget.file.name.endsWith(".jpg"))
         Column(
-          children: <Widget>[Expanded(
-          child: RotatedBox(
-            quarterTurns: 0,
-            child: Image.file(File(widget.file.path))
-          )
-        )]
+          children: <Widget>[
+            Expanded(
+              child: RotatedBox(
+                quarterTurns: 0,
+                child: Image.file(File(widget.file.path))
+              )
+            )
+          ]
+        )
+        else
+        Column(
+          children: <Widget>[
+            Expanded(
+              child: RotatedBox(
+                quarterTurns: 0,
+                child: FutureBuilder(
+                  future: initializeVideoPlayerFuture,
+                  builder: (context, snapshot){
+                    if(snapshot.connectionState == ConnectionState.done){
+                      return VideoPlayer(_controller);
+                    } else{
+                      return Center(child: CircularProgressIndicator(),);
+                    }
+                  },
+                )
+              )
+            )
+          ],
         ),
         Column(
           children: <Widget>[
@@ -72,3 +119,42 @@ class _FilePreviewPage extends State<FilePreviewPage>{
     ));
   }
 }
+
+// class VideoPlayer_ extends StatefulWidget{
+
+//   final XFile file;
+
+//   VideoPlayer_(this.file);
+
+//   @override
+//   _VideoPlayer_ createState() => _VideoPlayer_();
+// }
+
+// class _VideoPlayer_ extends State<VideoPlayer_>{
+
+//   VideoPlayerController _controller;
+//   Future<void> initializeVideoPlayerFuture;
+
+//   @override
+//   void initState(){
+//     _controller = VideoPlayerController.file(File(widget.file.path));
+//     initializeVideoPlayerFuture = _controller.initialize();
+//     super.initState();
+//   }
+
+//   @override
+//   void dispose(){
+//     _controller?.dispose();
+//     super.dispose();
+//   }
+
+//   @override
+//   Widget build(BuildContext context){
+//     return FutureBuilder(
+//       future: initializeVideoPlayerFuture,
+//       builder: (context, snapshot){
+//         return VideoPlayer(_controller);
+//       }
+//     );
+//   }
+// }
